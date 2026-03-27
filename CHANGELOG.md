@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.3.1] - 2026-03-27
+
+### Fixed
+
+- **Login redirect flow**: Users who aren't logged in are now seamlessly redirected back to the CLI authorize page after login — no more needing to click the link twice
+
+### Added
+
+- **Skills repo**: Standalone [feedbackbasket-skills](https://github.com/deifos/feedbackbasket-skills) repo with install.md and enhanced SKILL.md
+- **CLI docs page**: New `/docs/cli` page on feedbackbasket.com with full command reference and terminal demo
+- **Landing page updates**: CLI feature card, dark terminal mockup, "Agent-Ready CLI" positioning
+- **Published to npm**: `npm install -g feedbackbasket-cli` now available
+
+---
+
 ## [0.3.0] - 2026-03-26
 
 ### Added
