@@ -7,7 +7,8 @@ import { brand, divider } from '../output/theme.js';
 import type { OutputWriter } from '../output/writer.js';
 import type { BugReport, FeedbackStatus, Severity } from '../types.js';
 
-function resolveProjectId(optProject?: string): string | undefined {
+function resolveProjectId(optProject?: string, all?: boolean): string | undefined {
+  if (all) return undefined;
   if (optProject) return optProject;
   const config = loadConfig();
   return config.defaultProject;
@@ -21,6 +22,7 @@ export function createBugsCommand(getWriter: () => OutputWriter): Command {
     .command('list')
     .description('List bug reports with severity classification')
     .option('--project <id>', 'Filter by project ID')
+    .option('--all', 'Show bugs across all projects (ignore default project)')
     .option('--severity <level>', 'Filter by severity (high, medium, low)')
     .option('--status <status>', 'Filter by status')
     .option('--search <query>', 'Search bug content')
@@ -32,7 +34,7 @@ export function createBugsCommand(getWriter: () => OutputWriter): Command {
       const client = requireClient();
 
       const result = await client.getBugReports({
-        projectId: resolveProjectId(opts.project),
+        projectId: resolveProjectId(opts.project, opts.all),
         status: opts.status as FeedbackStatus | undefined,
         severity: opts.severity as Severity | undefined,
         search: opts.search,
@@ -66,13 +68,14 @@ export function createBugsCommand(getWriter: () => OutputWriter): Command {
 
   bugs
     .command('stats')
+    .option('--all', 'Show stats across all projects')
     .description('Show bug statistics summary')
     .option('--project <id>', 'Filter by project ID')
     .action(async (opts) => {
       const writer = getWriter();
       const client = requireClient();
 
-      const stats = await client.getBugStats({ projectId: opts.project });
+      const stats = await client.getBugStats({ projectId: resolveProjectId(opts.project, opts.all) });
 
       if (!writer.isMachineOutput()) {
         renderBugStats(stats);
@@ -128,8 +131,9 @@ function renderBugList(bugs: BugReport[]): void {
     const sev = severityColor[bug.severity](`[${bug.severity.toUpperCase()}]`);
     const status = brand.muted(`[${bug.status}]`);
     const content = bug.content.length > 75 ? bug.content.slice(0, 72) + '...' : bug.content;
+    const proj = bug.project ? brand.primary(bug.project.name) : '';
 
-    console.log(`${sev} ${status} ${brand.muted(bug.id)}`);
+    console.log(`${sev} ${status} ${proj} ${brand.muted(bug.id)}`);
     console.log(`  ${content}`);
     if (bug.aiSummary) {
       console.log(`  ${brand.hint(bug.aiSummary)}`);

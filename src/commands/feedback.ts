@@ -7,7 +7,8 @@ import { brand } from '../output/theme.js';
 import type { OutputWriter } from '../output/writer.js';
 import type { Feedback, FeedbackCategory, FeedbackStatus, Sentiment } from '../types.js';
 
-function resolveProjectId(optProject?: string): string | undefined {
+function resolveProjectId(optProject?: string, all?: boolean): string | undefined {
+  if (all) return undefined;
   if (optProject) return optProject;
   const config = loadConfig();
   return config.defaultProject;
@@ -34,6 +35,7 @@ export function createFeedbackCommand(getWriter: () => OutputWriter): Command {
     .command('list')
     .description('List feedback with optional filters')
     .option('--project <id>', 'Filter by project ID')
+    .option('--all', 'Show feedback across all projects (ignore default project)')
     .option('--category <category>', 'Filter by category (BUG, FEATURE_REQUEST, IMPROVEMENT, QUESTION)')
     .option('--status <status>', 'Filter by status (OPEN, UNDER_REVIEW, PLANNED, IN_PROGRESS, COMPLETE, CLOSED)')
     .option('--sentiment <sentiment>', 'Filter by sentiment (POSITIVE, NEGATIVE, NEUTRAL)')
@@ -46,7 +48,7 @@ export function createFeedbackCommand(getWriter: () => OutputWriter): Command {
       const client = requireClient();
 
       const result = await client.getFeedback({
-        projectId: resolveProjectId(opts.project),
+        projectId: resolveProjectId(opts.project, opts.all),
         category: opts.category as FeedbackCategory | undefined,
         status: opts.status as FeedbackStatus | undefined,
         sentiment: opts.sentiment as Sentiment | undefined,
@@ -165,7 +167,8 @@ function renderFeedbackList(items: Feedback[]): void {
     const content = item.content.length > 80 ? item.content.slice(0, 77) + '...' : item.content;
     const status = brand.muted(`[${item.status}]`);
 
-    console.log(`${cat} ${priority} ${status} ${brand.muted(item.id)}`);
+    const proj = item.project ? brand.primary(item.project.name) : '';
+    console.log(`${cat} ${priority} ${status} ${proj} ${brand.muted(item.id)}`);
     console.log(`  ${content}`);
     if (item.aiSummary) {
       console.log(`  ${brand.hint(item.aiSummary)}`);

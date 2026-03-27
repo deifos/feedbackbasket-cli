@@ -1,5 +1,31 @@
 # Changelog
 
+## [0.3.4] - 2026-03-27
+
+### Changed
+
+- **Project name in list output**: Bug list and feedback list now show the project name (in green) instead of just the ID — much easier to scan across projects
+
+---
+
+## [0.3.3] - 2026-03-27
+
+### Added
+
+- **`--all` flag**: `feedback list --all` and `bugs list --all` to query across all projects, bypassing the default project filter
+
+---
+
+## [0.3.2] - 2026-03-27
+
+### Changed
+
+- **Custom help output**: Basecamp-style grouped sections (CORE COMMANDS, SHORTCUTS, SEARCH & EXPORT, AUTH & CONFIG, FLAGS, EXAMPLES, LEARN MORE)
+- **Short flags**: `-j` for `--json`, `-q` for `--quiet`, `-m` for `--md`
+- **Branded header**: "FeedbackBasket CLI v0.3.2" with logo in help output
+
+---
+
 ## [0.3.1] - 2026-03-27
 
 ### Fixed
