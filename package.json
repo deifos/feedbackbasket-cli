@@ -1,0 +1,49 @@
+{
+  "name": "feedbackbasket-cli",
+  "version": "0.3.0",
+  "description": "Command-line interface for FeedbackBasket — manage feedback from your terminal",
+  "type": "module",
+  "main": "dist/src/cli.js",
+  "bin": {
+    "feedbackbasket": "dist/bin/feedbackbasket.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx bin/feedbackbasket.ts",
+    "start": "node dist/bin/feedbackbasket.js",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "feedbackbasket",
+    "feedback",
+    "cli",
+    "ai-agent",
+    "developer-tools"
+  ],
+  "author": "deifosv",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/deifos/feedbackbasket-cli.git"
+  },
+  "homepage": "https://feedbackbasket.com",
+  "dependencies": {
+    "axios": "^1.7.0",
+    "chalk": "^5.3.0",
+    "commander": "^13.1.0",
+    "open": "^10.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.0.0",
+    "typescript": "^5.7.0"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "files": [
+    "dist/**/*",
+    "skills/**/*",
+    "README.md"
+  ]
+}
