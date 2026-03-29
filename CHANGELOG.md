@@ -1,6 +1,10 @@
 # Changelog
 
-## [0.3.4] - 2026-03-27
+## [0.3.5] - 2026-03-27
+
+### Fixed
+
+- **Name resolution for `--project` flag**: `feedback list --project prontoshoot` and `bugs list --project prontoshoot` now resolve names to IDs — previously returned empty results when using names
 
 ### Changed
 

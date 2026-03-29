@@ -4,12 +4,16 @@ import { AuthManager } from '../auth/manager.js';
 import { loadConfig } from '../config/config.js';
 import { errAuth } from '../output/errors.js';
 import { brand, divider } from '../output/theme.js';
+import { resolveProject } from '../resolve.js';
 import type { OutputWriter } from '../output/writer.js';
 import type { BugReport, FeedbackStatus, Severity } from '../types.js';
 
-function resolveProjectId(optProject?: string, all?: boolean): string | undefined {
+async function resolveProjectId(client: FeedbackBasketClient, optProject?: string, all?: boolean): Promise<string | undefined> {
   if (all) return undefined;
-  if (optProject) return optProject;
+  if (optProject) {
+    const project = await resolveProject(client, optProject);
+    return project.id;
+  }
   const config = loadConfig();
   return config.defaultProject;
 }
@@ -34,7 +38,7 @@ export function createBugsCommand(getWriter: () => OutputWriter): Command {
       const client = requireClient();
 
       const result = await client.getBugReports({
-        projectId: resolveProjectId(opts.project, opts.all),
+        projectId: await resolveProjectId(client, opts.project, opts.all),
         status: opts.status as FeedbackStatus | undefined,
         severity: opts.severity as Severity | undefined,
         search: opts.search,
@@ -75,7 +79,7 @@ export function createBugsCommand(getWriter: () => OutputWriter): Command {
       const writer = getWriter();
       const client = requireClient();
 
-      const stats = await client.getBugStats({ projectId: resolveProjectId(opts.project, opts.all) });
+      const stats = await client.getBugStats({ projectId: await resolveProjectId(client, opts.project, opts.all) });
 
       if (!writer.isMachineOutput()) {
         renderBugStats(stats);

@@ -4,12 +4,16 @@ import { AuthManager } from '../auth/manager.js';
 import { loadConfig } from '../config/config.js';
 import { errAuth } from '../output/errors.js';
 import { brand } from '../output/theme.js';
+import { resolveProject } from '../resolve.js';
 import type { OutputWriter } from '../output/writer.js';
 import type { Feedback, FeedbackCategory, FeedbackStatus, Sentiment } from '../types.js';
 
-function resolveProjectId(optProject?: string, all?: boolean): string | undefined {
+async function resolveProjectId(client: FeedbackBasketClient, optProject?: string, all?: boolean): Promise<string | undefined> {
   if (all) return undefined;
-  if (optProject) return optProject;
+  if (optProject) {
+    const project = await resolveProject(client, optProject);
+    return project.id;
+  }
   const config = loadConfig();
   return config.defaultProject;
 }
@@ -48,7 +52,7 @@ export function createFeedbackCommand(getWriter: () => OutputWriter): Command {
       const client = requireClient();
 
       const result = await client.getFeedback({
-        projectId: resolveProjectId(opts.project, opts.all),
+        projectId: await resolveProjectId(client, opts.project, opts.all),
         category: opts.category as FeedbackCategory | undefined,
         status: opts.status as FeedbackStatus | undefined,
         sentiment: opts.sentiment as Sentiment | undefined,
@@ -115,7 +119,7 @@ export function createFeedbackCommand(getWriter: () => OutputWriter): Command {
       const client = requireClient();
 
       const result = await client.searchFeedback(query, {
-        projectId: resolveProjectId(opts.project),
+        projectId: await resolveProjectId(client, opts.project),
         category: opts.category,
         limit: parseInt(opts.limit, 10),
       });
