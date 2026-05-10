@@ -16,7 +16,7 @@ feedbackbasket login
 # Or use a token directly (for CI/headless)
 feedbackbasket login --token fb_cli_your_token_here
 
-# Remote server/headless browser flow (paste token back into terminal)
+# Remote server flow: use when localhost browser callbacks cannot reach the CLI
 feedbackbasket login --manual
 
 # Start exploring
@@ -51,7 +51,7 @@ feedbackbasket setup claude
 
 ```bash
 feedbackbasket login                   # Browser OAuth flow (alias for auth login)
-feedbackbasket login --manual          # Remote/headless browser token paste
+feedbackbasket login --manual          # No localhost browser callback (remote servers)
 feedbackbasket login --token <token>   # Use an existing CLI token (CI / scripts)
 feedbackbasket logout                  # Clear credentials (alias for auth logout)
 feedbackbasket auth status             # Show auth state, scope, default project

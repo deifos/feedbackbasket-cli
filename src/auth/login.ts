@@ -130,7 +130,8 @@ export async function browserLogin(baseUrl: string, scope: 'read' | 'full' = 're
       console.log(`  ${brand.primary(authorizeUrl)}`);
       console.log();
       console.log(`  ${brand.muted('Waiting for authentication...')}`);
-      console.log(`  ${brand.muted('On remote machines, use: feedbackbasket login --manual')}`);
+      console.log(`  ${brand.muted('If this machine cannot receive the localhost browser callback, use:')}`);
+      console.log(`  ${brand.command('feedbackbasket login --manual')}`);
       console.log();
 
       open(authorizeUrl).catch(() => {
@@ -146,9 +147,12 @@ export async function manualLogin(baseUrl: string, scope: 'read' | 'full' = 'rea
   console.log();
   console.log(`  ${logo()} CLI`);
   console.log();
-  console.log(`  ${brand.primary('Open this URL to create a CLI token:')}`);
+  console.log(`  ${brand.primary('Open this URL on any machine with a browser:')}`);
   console.log();
   console.log(`  ${brand.primary(authorizeUrl)}`);
+  console.log();
+  console.log(`  ${brand.muted('Use this when a remote server cannot receive the localhost browser callback.')}`);
+  console.log(`  ${brand.muted('The CLI still needs outbound HTTPS access to verify and use the token.')}`);
   console.log();
   console.log(`  ${brand.muted('After approving access, paste the token shown in your browser.')}`);
   console.log();

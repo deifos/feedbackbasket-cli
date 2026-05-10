@@ -1,5 +1,18 @@
 # Changelog
 
+## [0.5.0] - 2026-05-10
+
+### Added
+
+- **`feedbackbasket login --manual`** — authenticate remote servers by approving in a browser and pasting the generated CLI token back into the terminal
+
+### Changed
+
+- **Clearer manual-login guidance** — `--manual` is documented as the flow for servers that cannot receive the localhost browser callback, while still requiring outbound HTTPS
+- **CLI token validation** — login now rejects MCP API keys (`fb_key_...`) with a clear hint because CLI login requires `fb_cli_...` tokens
+
+---
+
 ## [0.4.0] - 2026-04-15
 
 ### Added
@@ -10,7 +23,6 @@
 - **`--reply-to <email>` on `projects update`** — set or clear the default reply-to email for a project (e.g. `projects update myapp --reply-to vlad@example.com`)
 - **Interactive reply-to prompt** — when sending a reply with no `--reply-to` and no project default, the CLI asks the human whether to use their account email or enter a custom one (agent mode returns a clear error asking the agent to pass `--reply-to` or set a project default)
 - **`replyToEmail` in project detail** — `projects show` now displays the configured reply-to address
-- **`feedbackbasket login --manual`** — authenticate remote servers by approving in a browser and pasting the generated CLI token back into the terminal
 
 ### API Endpoints
 

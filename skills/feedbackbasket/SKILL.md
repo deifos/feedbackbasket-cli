@@ -21,7 +21,7 @@ Full command-line interface for managing feedback, bug reports, projects, widget
 
 ```bash
 feedbackbasket login                   # Opens browser — one click, full access
-feedbackbasket login --manual          # Remote/headless browser token paste
+feedbackbasket login --manual          # No localhost browser callback (remote servers)
 feedbackbasket login --token <TOKEN>   # Manual token (CI/headless)
 feedbackbasket auth status             # Check auth state
 feedbackbasket doctor                  # Full diagnostics

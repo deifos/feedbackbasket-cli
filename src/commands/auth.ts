@@ -21,7 +21,7 @@ export function createAuthCommand(getWriter: () => OutputWriter): Command {
     .command('login')
     .description('Authenticate with FeedbackBasket')
     .option('--token <token>', 'Use an API token directly (for CI/headless)')
-    .option('--manual', 'Show a browser token to paste back into the terminal')
+    .option('--manual', 'Authenticate without a localhost browser callback')
     .option('--scope <scope>', 'Access scope: read or full', 'full')
     .action(async (opts) => {
       const writer = getWriter();
@@ -337,7 +337,7 @@ export function createLoginCommand(getWriter: () => OutputWriter): Command {
   return new Command('login')
     .description('Authenticate with FeedbackBasket (alias for auth login)')
     .option('--token <token>', 'Use an API token directly (for CI/headless)')
-    .option('--manual', 'Show a browser token to paste back into the terminal')
+    .option('--manual', 'Authenticate without a localhost browser callback')
     .option('--scope <scope>', 'Access scope: read or full', 'full')
     .action(async (opts) => {
       // Delegate to auth login by re-parsing
