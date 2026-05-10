@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.4.0] - 2026-04-15
+
+### Added
+
+- **`feedback reply <id> "<content>"`** — send an email reply directly to the feedback submitter. The customer receives a branded email with your reply and the original feedback, and their response goes to the configured reply-to address
+- **`feedback replies <id>`** — list all replies sent for a feedback item (content, reply-to, who sent it, timestamp)
+- **`--reply-to <email>` on `feedback reply`** — override the project's default reply-to for a single reply
+- **`--reply-to <email>` on `projects update`** — set or clear the default reply-to email for a project (e.g. `projects update myapp --reply-to vlad@example.com`)
+- **Interactive reply-to prompt** — when sending a reply with no `--reply-to` and no project default, the CLI asks the human whether to use their account email or enter a custom one (agent mode returns a clear error asking the agent to pass `--reply-to` or set a project default)
+- **`replyToEmail` in project detail** — `projects show` now displays the configured reply-to address
+- **`feedbackbasket login --manual`** — authenticate remote servers by approving in a browser and pasting the generated CLI token back into the terminal
+
+### API Endpoints
+
+- `POST /api/v1/feedback/:id/replies` — send reply (requires `full` scope)
+- `GET /api/v1/feedback/:id/replies` — list replies
+- `PATCH /api/v1/projects/:id` — now accepts `replyToEmail` in the body
+
+---
+
 ## [0.3.5] - 2026-03-27
 
 ### Fixed

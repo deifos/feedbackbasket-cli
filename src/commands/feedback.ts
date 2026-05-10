@@ -22,6 +22,7 @@ import { createFeedbackNoteCommand } from './feedback-note.js';
 import { createFeedbackDeleteCommand } from './feedback-delete.js';
 import { createFeedbackBulkUpdateCommand } from './feedback-bulk-update.js';
 import { createFeedbackExportCommand } from './feedback-export.js';
+import { createFeedbackReplyCommand, createFeedbackRepliesCommand } from './feedback-reply.js';
 
 export function createFeedbackCommand(getWriter: () => OutputWriter): Command {
   const feedback = new Command('feedback')
@@ -30,6 +31,8 @@ export function createFeedbackCommand(getWriter: () => OutputWriter): Command {
   // Write subcommands
   feedback.addCommand(createFeedbackUpdateCommand(getWriter));
   feedback.addCommand(createFeedbackNoteCommand(getWriter));
+  feedback.addCommand(createFeedbackReplyCommand(getWriter));
+  feedback.addCommand(createFeedbackRepliesCommand(getWriter));
   feedback.addCommand(createFeedbackDeleteCommand(getWriter));
   feedback.addCommand(createFeedbackBulkUpdateCommand(getWriter));
   feedback.addCommand(createFeedbackExportCommand(getWriter));

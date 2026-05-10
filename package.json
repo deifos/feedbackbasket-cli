@@ -1,6 +1,6 @@
 {
   "name": "feedbackbasket-cli",
-  "version": "0.3.6",
+  "version": "0.4.0",
   "description": "Command-line interface for FeedbackBasket — manage feedback from your terminal",
   "type": "module",
   "main": "dist/src/cli.js",

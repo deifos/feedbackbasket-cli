@@ -104,12 +104,18 @@ export function createProjectsCommand(getWriter: () => OutputWriter): Command {
     .option('--name <name>', 'New project name')
     .option('--url <url>', 'New project URL')
     .option('--description <text>', 'New project description')
+    .option('--reply-to <email>', 'Default reply-to email for feedback replies (empty string to clear)')
     .action(async (idOrName, opts) => {
       const writer = getWriter();
 
-      if (!opts.name && !opts.url && opts.description === undefined) {
+      if (
+        !opts.name &&
+        !opts.url &&
+        opts.description === undefined &&
+        opts.replyTo === undefined
+      ) {
         throw errUsage(
-          'At least one of --name, --url, or --description is required',
+          'At least one of --name, --url, --description, or --reply-to is required',
           'Example: feedbackbasket projects update <id> --name "New Name"',
         );
       }
@@ -118,10 +124,11 @@ export function createProjectsCommand(getWriter: () => OutputWriter): Command {
       const resolved = await resolveProject(client, idOrName);
       const id = resolved.id;
 
-      const data: Record<string, string> = {};
+      const data: Record<string, string | null> = {};
       if (opts.name) data['name'] = opts.name;
       if (opts.url) data['url'] = opts.url;
       if (opts.description !== undefined) data['description'] = opts.description;
+      if (opts.replyTo !== undefined) data['replyToEmail'] = opts.replyTo || null;
 
       const updated = await client.updateProject(id, data);
 
@@ -228,6 +235,9 @@ function renderProjectDetail(project: Project): void {
   console.log(`  ${brand.label('URL'.padEnd(14))} ${project.url}`);
   if (project.description) {
     console.log(`  ${brand.label('Description'.padEnd(14))} ${project.description}`);
+  }
+  if (project.replyToEmail) {
+    console.log(`  ${brand.label('Reply-to'.padEnd(14))} ${project.replyToEmail}`);
   }
   console.log(`  ${brand.label('Created'.padEnd(14))} ${project.createdAt}`);
   console.log(`  ${brand.label('Feedback'.padEnd(14))} ${project.totalFeedback}`);

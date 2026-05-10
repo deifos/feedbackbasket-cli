@@ -16,6 +16,9 @@ feedbackbasket login
 # Or use a token directly (for CI/headless)
 feedbackbasket login --token fb_cli_your_token_here
 
+# Remote server/headless browser flow (paste token back into terminal)
+feedbackbasket login --manual
+
 # Start exploring
 feedbackbasket projects list
 feedbackbasket feedback list
@@ -48,11 +51,14 @@ feedbackbasket setup claude
 
 ```bash
 feedbackbasket login                   # Browser OAuth flow (alias for auth login)
-feedbackbasket login --token <token>   # Manual token (CI/headless)
+feedbackbasket login --manual          # Remote/headless browser token paste
+feedbackbasket login --token <token>   # Use an existing CLI token (CI / scripts)
 feedbackbasket logout                  # Clear credentials (alias for auth logout)
 feedbackbasket auth status             # Show auth state, scope, default project
 feedbackbasket auth token              # Print raw token (for scripting/piping)
 ```
+
+CLI tokens start with `fb_cli_`. MCP API keys start with `fb_key_` and are only for MCP server configuration.
 
 ### Projects
 
@@ -63,6 +69,7 @@ feedbackbasket projects list                              # List all projects wi
 feedbackbasket projects show <name-or-id>                 # Project details
 feedbackbasket projects create "My App" --url https://... # Create project
 feedbackbasket projects update myapp --name "New Name"    # Update project
+feedbackbasket projects update myapp --reply-to vlad@example.com  # Set default reply-to email
 feedbackbasket projects delete myapp                      # Delete (with confirmation)
 ```
 
@@ -82,6 +89,8 @@ feedbackbasket feedback search "crash on mobile"           # Search shortcut
 # Write
 feedbackbasket feedback update <id> --status PLANNED       # Update status
 feedbackbasket feedback update <id> --category BUG         # Update category
+feedbackbasket feedback reply <id> "Thanks for reporting!" # Email the submitter
+feedbackbasket feedback replies <id>                       # List sent replies
 feedbackbasket feedback note <id> "Investigating this..."  # Add internal note
 feedbackbasket feedback delete <id>                        # Delete feedback
 feedbackbasket feedback bulk-update --status CLOSED --ids id1,id2,id3

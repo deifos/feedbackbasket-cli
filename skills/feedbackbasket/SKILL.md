@@ -1,74 +1,160 @@
 ---
 name: FeedbackBasket
-description: Manage FeedbackBasket projects, feedback, and bug reports from the command line
+description: Manage FeedbackBasket projects, feedback, bugs, widgets, and team from the command line
 triggers:
   - feedbackbasket
   - feedback
   - bugs
   - bug reports
   - user feedback
+  - widget
+  - feedback widget
 invocable: true
 argument-hint: "<command> [options]"
 ---
 
 # FeedbackBasket CLI
 
-Command-line interface for managing feedback, bug reports, and projects in FeedbackBasket.
+Full command-line interface for managing feedback, bug reports, projects, widgets, and team in FeedbackBasket. Works with any AI agent that can run shell commands.
 
 ## Authentication
 
-Before using any commands, authenticate:
 ```bash
-feedbackbasket auth login           # Opens browser for login
-feedbackbasket auth login --token <TOKEN>  # Manual token (CI/headless)
-feedbackbasket auth status          # Check auth state
+feedbackbasket login                   # Opens browser — one click, full access
+feedbackbasket login --manual          # Remote/headless browser token paste
+feedbackbasket login --token <TOKEN>   # Manual token (CI/headless)
+feedbackbasket auth status             # Check auth state
+feedbackbasket doctor                  # Full diagnostics
 ```
 
 ## Output Modes
 
-| Flag | When to Use | Output |
-|------|------------|--------|
-| (none) | Terminal | Styled, human-readable |
-| `--json` | Parse full response | JSON envelope with breadcrumbs |
-| `--agent` | Agent automation | Raw JSON data only |
-| `--quiet` | Scripting | Raw JSON data only |
-| `--md` | Documentation | Markdown formatted |
+| Flag | Output | When to Use |
+|------|--------|-------------|
+| (none) | Styled (TTY) or JSON (piped) | Auto-detect |
+| `--json` | JSON envelope with breadcrumbs | Parse full response |
+| `--agent` | Raw JSON data only | Agent automation |
+| `--quiet` | Raw JSON data only | Scripting |
+| `--md` | Markdown | Documentation |
 
 **Agent rule**: Always use `--agent` for programmatic access. Parse the JSON output directly.
 
 ## Quick Reference
 
-| Task | Command |
-|------|---------|
-| List projects | `feedbackbasket projects list` |
-| List feedback | `feedbackbasket feedback list` |
-| Filter by project | `feedbackbasket feedback list --project <id>` |
-| Filter by category | `feedbackbasket feedback list --category BUG` |
-| Filter by status | `feedbackbasket feedback list --status OPEN` |
-| Search feedback | `feedbackbasket feedback search "query"` |
-| View single item | `feedbackbasket feedback show <id>` |
-| List bugs | `feedbackbasket bugs list` |
-| High severity bugs | `feedbackbasket bugs list --severity high` |
-| Bug statistics | `feedbackbasket bugs stats` |
-| Update status | `feedbackbasket feedback update <id> --status PLANNED` |
-| Add note | `feedbackbasket feedback note <id> "note content"` |
-| Health check | `feedbackbasket doctor` |
+### Projects
+```bash
+feedbackbasket projects list
+feedbackbasket projects show <name-or-id>
+feedbackbasket projects create "My App" --url https://myapp.com --description "..."
+feedbackbasket projects update <name-or-id> --name "New Name" --url <url> --description "..."
+feedbackbasket projects update <name-or-id> --reply-to vlad@example.com  # default reply-to for feedback replies
+feedbackbasket projects delete <name-or-id> --yes
+```
 
-## Common Workflows
+All project commands accept **name or ID**. Names are matched case-insensitively with fuzzy suggestions on typos.
+
+### Feedback
+```bash
+# Read
+feedbackbasket feedback list --project <id> --category BUG --status OPEN --sentiment NEGATIVE
+feedbackbasket feedback list --search "login" --limit 50 --offset 0 --notes
+feedbackbasket feedback show <id>
+feedbackbasket feedback search "crash on mobile" --project <id> --limit 10
+
+# Write
+feedbackbasket feedback update <id> --status PLANNED --category BUG --sentiment NEGATIVE
+feedbackbasket feedback note <id> "Investigating — appears related to auth flow"
+feedbackbasket feedback delete <id> --yes
+feedbackbasket feedback bulk-update --status CLOSED --ids id1,id2,id3
+
+# Reply to submitter via email
+feedbackbasket feedback reply <id> "Thanks for reporting — we pushed a fix!"
+feedbackbasket feedback reply <id> "<content>" --reply-to vlad@example.com  # override reply-to
+feedbackbasket feedback replies <id>                                          # list past replies
+
+# Export
+feedbackbasket feedback export <project> --format csv
+feedbackbasket feedback export <project> --format md
+feedbackbasket feedback export <project> --format json
+```
+
+### Bug Reports
+```bash
+feedbackbasket bugs list --severity high --status OPEN --project <id>
+feedbackbasket bugs stats --project <id>
+```
+
+### Widget
+```bash
+# Get embed code (ready to paste into HTML)
+feedbackbasket widget script <project>
+
+# View settings
+feedbackbasket widget settings <project>
+
+# Customize
+feedbackbasket widget settings <project> --color "#22c55e" --label "Send Feedback"
+feedbackbasket widget settings <project> --position bottom-left --display modal
+feedbackbasket widget settings <project> --email-required --intro "How can we improve?"
+```
+
+### Team
+```bash
+feedbackbasket team list
+feedbackbasket team role <memberId> --role admin
+feedbackbasket team remove <memberId> --yes
+```
+
+### Utilities
+```bash
+feedbackbasket doctor                  # Health check (auth, connectivity, skill)
+feedbackbasket setup claude            # Install this skill for Claude Code
+```
+
+## Common Agent Workflows
+
+### Set up a new project end-to-end
+```bash
+feedbackbasket projects create "My App" --url https://myapp.com --agent
+feedbackbasket widget script "My App" --agent
+# Agent gets the embed code, adds it to the HTML
+feedbackbasket widget settings "My App" --color "#22c55e" --label "Feedback" --agent
+```
 
 ### Triage new feedback
 ```bash
 feedbackbasket feedback list --status OPEN --agent
-# Review items, then update status:
-feedbackbasket feedback update <id> --status UNDER_REVIEW
-feedbackbasket feedback note <id> "Reviewing — appears related to auth flow"
+# Review items, then update:
+feedbackbasket feedback update <id> --status UNDER_REVIEW --agent
+feedbackbasket feedback note <id> "Reviewing — appears related to auth flow" --agent
 ```
 
-### Investigate bugs
+### Investigate high-priority bugs
 ```bash
 feedbackbasket bugs list --severity high --agent
 feedbackbasket feedback show <id> --agent
-# Shows full details including browser, OS, page URL, AI analysis
+# Response includes browser, OS, page URL, AI analysis, priority score
+```
+
+### Close the loop — reply to the submitter
+```bash
+# Agent reads context, drafts its own reply, sends it
+feedbackbasket feedback show <id> --agent                    # read context + project.replyToEmail
+feedbackbasket feedback reply <id> "<drafted response>" --agent
+feedbackbasket feedback update <id> --status COMPLETE --agent
+feedbackbasket feedback note <id> "Replied via CLI" --agent
+```
+**Important:** If `feedback show` returns `project.replyToEmail: null`, the agent MUST either:
+1. Pass `--reply-to <email>` with an explicit address, OR
+2. Ask the human which reply-to email to use (the account owner's email is a reasonable default, but requires user confirmation), OR
+3. Set a project default first: `feedbackbasket projects update <project> --reply-to <email>`
+
+Never silently guess a reply-to address — it becomes the "From" address the customer sees.
+
+### Export for analysis
+```bash
+feedbackbasket feedback export myapp --format json --agent
+# Agent can parse the JSON and generate reports
 ```
 
 ### Search for patterns
@@ -79,41 +165,28 @@ feedbackbasket feedback search "crash" --category BUG --agent
 
 ## Filtering Options
 
-### Categories
-`BUG`, `FEATURE_REQUEST`, `IMPROVEMENT`, `QUESTION`
+| Type | Values |
+|------|--------|
+| Categories | `BUG`, `FEATURE_REQUEST`, `IMPROVEMENT`, `QUESTION` |
+| Statuses | `OPEN`, `UNDER_REVIEW`, `PLANNED`, `IN_PROGRESS`, `COMPLETE`, `CLOSED` |
+| Sentiments | `POSITIVE`, `NEGATIVE`, `NEUTRAL` |
+| Bug Severity | `high`, `medium`, `low` |
 
-### Statuses
-`OPEN`, `UNDER_REVIEW`, `PLANNED`, `IN_PROGRESS`, `COMPLETE`, `CLOSED`
+## JSON Envelope
 
-### Sentiments
-`POSITIVE`, `NEGATIVE`, `NEUTRAL`
-
-### Bug Severity
-`high`, `medium`, `low`
-
-## Pagination
-
-Use `--limit` and `--offset` for pagination:
-```bash
-feedbackbasket feedback list --limit 50 --offset 0
-feedbackbasket feedback list --limit 50 --offset 50  # next page
-```
-
-## JSON Envelope Format
-
-When using `--json`, responses follow this structure:
+When using `--json`, responses include breadcrumbs:
 ```json
 {
   "ok": true,
   "data": [...],
-  "summary": "Showing 20 of 156 feedback items",
+  "summary": "5 projects",
   "breadcrumbs": [
-    { "action": "Next page", "cmd": "feedbackbasket feedback list --offset 20" }
+    { "action": "View feedback", "cmd": "feedbackbasket feedback list --project myapp" }
   ]
 }
 ```
 
-Errors:
+Errors include hints:
 ```json
 {
   "ok": false,
@@ -126,7 +199,10 @@ Errors:
 ## Invariants
 
 - Always authenticate before data commands
-- `--agent` flag suppresses all interactive prompts
-- Write operations (update, note) require `--scope full` during auth
-- Feedback IDs are stable — safe to reference across commands
+- `--agent` flag suppresses all interactive prompts and confirmations
+- Default project (set during login) is used when `--project` is not specified
+- Project names resolve case-insensitively with fuzzy matching
+- Write operations use full scope (granted by default during login)
+- Feedback IDs are stable CUIDs — safe to reference across commands
 - All timestamps are ISO 8601
+- `--yes` flag skips delete confirmations in interactive mode

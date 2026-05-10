@@ -1,3 +1,5 @@
+import { createInterface } from 'node:readline/promises';
+import { stdin as input, stdout as output } from 'node:process';
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
 import { randomUUID } from 'node:crypto';
 import { URL } from 'node:url';
@@ -10,6 +12,11 @@ interface LoginResult {
 }
 
 const TIMEOUT_MS = 120_000;
+const CLI_TOKEN_PATTERN = /^fb_cli_[a-f0-9]{64}$/;
+
+export function isCliTokenFormat(token: string): boolean {
+  return CLI_TOKEN_PATTERN.test(token);
+}
 
 const SUCCESS_HTML = `<!DOCTYPE html>
 <html><head><title>FeedbackBasket CLI</title>
@@ -123,11 +130,44 @@ export async function browserLogin(baseUrl: string, scope: 'read' | 'full' = 're
       console.log(`  ${brand.primary(authorizeUrl)}`);
       console.log();
       console.log(`  ${brand.muted('Waiting for authentication...')}`);
+      console.log(`  ${brand.muted('On remote machines, use: feedbackbasket login --manual')}`);
       console.log();
 
       open(authorizeUrl).catch(() => {
-        // Browser open failed — user will use the URL manually
+        // Browser open failed; user will use the URL manually.
       });
     });
   });
+}
+
+export async function manualLogin(baseUrl: string, scope: 'read' | 'full' = 'read'): Promise<LoginResult> {
+  const authorizeUrl = `${baseUrl}/cli/authorize?mode=manual&scope=${scope}`;
+
+  console.log();
+  console.log(`  ${logo()} CLI`);
+  console.log();
+  console.log(`  ${brand.primary('Open this URL to create a CLI token:')}`);
+  console.log();
+  console.log(`  ${brand.primary(authorizeUrl)}`);
+  console.log();
+  console.log(`  ${brand.muted('After approving access, paste the token shown in your browser.')}`);
+  console.log();
+
+  open(authorizeUrl).catch(() => {
+    // Browser open failed; user will use the URL manually.
+  });
+
+  const rl = createInterface({ input, output });
+  try {
+    const token = (await rl.question('  Paste token: ')).trim();
+    if (!token) {
+      throw new Error('No token provided');
+    }
+    if (!isCliTokenFormat(token)) {
+      throw new Error('Expected a FeedbackBasket CLI token beginning with fb_cli_');
+    }
+    return { token, scope };
+  } finally {
+    rl.close();
+  }
 }

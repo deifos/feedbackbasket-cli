@@ -3,7 +3,7 @@ import { existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { homedir } from 'node:os';
 import { AuthManager } from '../auth/manager.js';
-import { browserLogin } from '../auth/login.js';
+import { browserLogin, isCliTokenFormat, manualLogin } from '../auth/login.js';
 import { saveCredentials, loadCredentials } from '../config/credentials.js';
 import { loadConfig, saveConfig } from '../config/config.js';
 import { FeedbackBasketClient } from '../client.js';
@@ -21,6 +21,7 @@ export function createAuthCommand(getWriter: () => OutputWriter): Command {
     .command('login')
     .description('Authenticate with FeedbackBasket')
     .option('--token <token>', 'Use an API token directly (for CI/headless)')
+    .option('--manual', 'Show a browser token to paste back into the terminal')
     .option('--scope <scope>', 'Access scope: read or full', 'full')
     .action(async (opts) => {
       const writer = getWriter();
@@ -41,9 +42,19 @@ export function createAuthCommand(getWriter: () => OutputWriter): Command {
 
       if (opts.token) {
         token = opts.token;
+      } else if (opts.manual) {
+        const result = await manualLogin(config.baseUrl, scope);
+        token = result.token;
       } else {
         const result = await browserLogin(config.baseUrl, scope);
         token = result.token;
+      }
+
+      if (!isCliTokenFormat(token)) {
+        throw errUsage(
+          'Expected a FeedbackBasket CLI token beginning with fb_cli_',
+          'MCP API keys begin with fb_key_ and are only for MCP server configuration',
+        );
       }
 
       // Verify token + get profile
@@ -326,12 +337,14 @@ export function createLoginCommand(getWriter: () => OutputWriter): Command {
   return new Command('login')
     .description('Authenticate with FeedbackBasket (alias for auth login)')
     .option('--token <token>', 'Use an API token directly (for CI/headless)')
+    .option('--manual', 'Show a browser token to paste back into the terminal')
     .option('--scope <scope>', 'Access scope: read or full', 'full')
     .action(async (opts) => {
       // Delegate to auth login by re-parsing
       const authCmd = createAuthCommand(getWriter);
       const args = ['node', 'feedbackbasket', 'login'];
       if (opts.token) args.push('--token', opts.token);
+      if (opts.manual) args.push('--manual');
       if (opts.scope) args.push('--scope', opts.scope);
       await authCmd.parseAsync(args);
     });

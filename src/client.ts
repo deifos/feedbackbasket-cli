@@ -43,7 +43,7 @@ export class FeedbackBasketClient {
     return this.request<{ project: Project }>('POST', '/projects', data);
   }
 
-  async updateProject(id: string, data: { name?: string; url?: string; description?: string }): Promise<Project> {
+  async updateProject(id: string, data: { name?: string; url?: string; description?: string; replyToEmail?: string | null }): Promise<Project> {
     return this.request<Project>('PATCH', `/projects/${encodeURIComponent(id)}`, data);
   }
 
@@ -94,6 +94,16 @@ export class FeedbackBasketClient {
 
   async createNote(feedbackId: string, content: string): Promise<{ id: string; content: string; createdAt: string }> {
     return this.request('POST', `/feedback/${encodeURIComponent(feedbackId)}/notes`, { content });
+  }
+
+  async sendReply(feedbackId: string, content: string, replyToEmail?: string): Promise<{ reply: { id: string; content: string; replyToEmail: string; sentBy: string; createdAt: string }; sentTo: string }> {
+    const body: Record<string, string> = { content };
+    if (replyToEmail) body['replyToEmail'] = replyToEmail;
+    return this.request('POST', `/feedback/${encodeURIComponent(feedbackId)}/replies`, body);
+  }
+
+  async listReplies(feedbackId: string): Promise<{ replies: Array<{ id: string; content: string; replyToEmail: string; sentBy: string; createdAt: string }>; total: number }> {
+    return this.request('GET', `/feedback/${encodeURIComponent(feedbackId)}/replies`);
   }
 
   async deleteFeedback(id: string): Promise<{ deleted: boolean; id: string }> {

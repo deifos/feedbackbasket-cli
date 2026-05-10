@@ -10,6 +10,7 @@ export interface Project {
   name: string;
   url: string;
   description?: string;
+  replyToEmail?: string | null;
   createdAt: string;
   totalFeedback: number;
   byStatus: Record<string, number>;
@@ -34,6 +35,7 @@ export interface Feedback {
   project: {
     id: string;
     name: string;
+    replyToEmail?: string | null;
   };
   notes?: FeedbackNote[];
   createdAt: string;
