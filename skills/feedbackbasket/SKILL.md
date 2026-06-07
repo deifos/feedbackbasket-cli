@@ -96,7 +96,16 @@ feedbackbasket widget settings <project>
 feedbackbasket widget settings <project> --color "#22c55e" --label "Send Feedback"
 feedbackbasket widget settings <project> --position bottom-left --display modal
 feedbackbasket widget settings <project> --email-required --intro "How can we improve?"
+feedbackbasket widget settings <project> --show-email --allow-attachments --guided
+
+# Guided feedback types and follow-up questions
+feedbackbasket widget flow <project>
+feedbackbasket widget flow <project> --enable
+feedbackbasket widget flow <project> --reset-default --enable
+feedbackbasket widget flow <project> --config ./feedback-flow.json
 ```
+
+`widget flow --config` accepts either a `feedbackFlow` object or a JSON object with a `feedbackFlow` key. Use it when an agent needs to customize visitor choices such as Bug report, Feature request, and General feedback. Supported v1 question types are `text`, `textarea`, and `single_choice`.
 
 ### Team
 ```bash
@@ -119,6 +128,8 @@ feedbackbasket projects create "My App" --url https://myapp.com --agent
 feedbackbasket widget script "My App" --agent
 # Agent gets the embed code, adds it to the HTML
 feedbackbasket widget settings "My App" --color "#22c55e" --label "Feedback" --agent
+# Optional: enable the guided wizard with Bug, Feature, and General templates
+feedbackbasket widget flow "My App" --reset-default --enable --agent
 ```
 
 ### Triage new feedback
@@ -133,7 +144,7 @@ feedbackbasket feedback note <id> "Reviewing — appears related to auth flow" -
 ```bash
 feedbackbasket bugs list --severity high --agent
 feedbackbasket feedback show <id> --agent
-# Response includes browser, OS, page URL, AI analysis, priority score
+# Response includes browser, OS, page URL, submitted feedback type, follow-up answers, AI analysis, priority score
 ```
 
 ### Close the loop — reply to the submitter

@@ -4,6 +4,51 @@ export type FeedbackStatus = 'OPEN' | 'UNDER_REVIEW' | 'PLANNED' | 'IN_PROGRESS'
 export type FeedbackCategory = 'BUG' | 'FEATURE_REQUEST' | 'IMPROVEMENT' | 'QUESTION';
 export type Sentiment = 'POSITIVE' | 'NEGATIVE' | 'NEUTRAL';
 export type Severity = 'high' | 'medium' | 'low';
+export type FeedbackFlowQuestionType = 'text' | 'textarea' | 'single_choice';
+
+export interface FeedbackFlowQuestion {
+  id: string;
+  label: string;
+  type: FeedbackFlowQuestionType;
+  placeholder?: string;
+  options?: string[];
+}
+
+export interface FeedbackFlowType {
+  id: string;
+  emoji: string;
+  label: string;
+  description: string;
+  questions: FeedbackFlowQuestion[];
+}
+
+export interface FeedbackFlowSettings {
+  enabled: boolean;
+  mode: 'guided';
+  types: FeedbackFlowType[];
+}
+
+export interface WidgetSettings {
+  widgetType?: string;
+  triggerMode?: 'floating' | 'inline';
+  buttonColor?: string;
+  buttonRadius?: number;
+  buttonLabel?: string;
+  buttonSize?: 'mini' | 'regular';
+  iconOnly?: boolean;
+  showIcon?: boolean;
+  icon?: string;
+  introMessage?: string;
+  successMessage?: string;
+  position?: string;
+  showEmailField?: boolean;
+  emailRequired?: boolean;
+  allowAttachments?: boolean;
+  displayMode?: 'modal' | 'popup';
+  zIndex?: number;
+  showBranding?: boolean;
+  feedbackFlow?: FeedbackFlowSettings;
+}
 
 export interface Project {
   id: string;
@@ -27,6 +72,18 @@ export interface Feedback {
   aiSummary?: string | null;
   aiPriorityScore?: number | null;
   reasoning?: string | null;
+  feedbackType?: {
+    id?: string;
+    emoji?: string;
+    label?: string;
+    description?: string;
+  } | null;
+  followUpAnswers?: Array<{
+    questionId: string;
+    label: string;
+    type: FeedbackFlowQuestionType;
+    value: string;
+  }> | null;
   pageUrl?: string | null;
   browser?: string | null;
   os?: string | null;

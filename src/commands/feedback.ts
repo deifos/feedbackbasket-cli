@@ -192,6 +192,7 @@ function renderFeedbackDetail(item: Feedback): void {
   const fields: [string, string | null | undefined][] = [
     ['Status', item.status],
     ['Category', item.category],
+    ['Feedback Type', formatFeedbackType(item)],
     ['Sentiment', item.sentiment],
     ['Priority', item.aiPriorityScore != null ? String(item.aiPriorityScore) : null],
     ['Email', item.email],
@@ -214,6 +215,16 @@ function renderFeedbackDetail(item: Feedback): void {
   console.log(brand.bold('Content:'));
   console.log(`  ${item.content}`);
 
+  if (item.followUpAnswers && item.followUpAnswers.length > 0) {
+    console.log();
+    console.log(brand.bold('Follow-up Answers:'));
+    for (const answer of item.followUpAnswers) {
+      const value = answer.value?.trim() || brand.muted('(skipped)');
+      console.log(`  ${brand.bold(answer.label)}`);
+      console.log(`    ${value}`);
+    }
+  }
+
   if (item.aiSummary) {
     console.log();
     console.log(brand.bold('AI Summary:'));
@@ -234,4 +245,11 @@ function renderFeedbackDetail(item: Feedback): void {
       console.log(`    ${note.content}`);
     }
   }
+}
+
+function formatFeedbackType(item: Feedback): string | undefined {
+  if (!item.feedbackType) return undefined;
+  const label = item.feedbackType.label || item.feedbackType.id;
+  if (!label) return undefined;
+  return item.feedbackType.emoji ? `${item.feedbackType.emoji} ${label}` : label;
 }

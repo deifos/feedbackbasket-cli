@@ -10,6 +10,7 @@ import type {
   UserProfile,
   Project,
   Feedback,
+  WidgetSettings,
 } from './types.js';
 
 export class FeedbackBasketClient {
@@ -75,11 +76,11 @@ export class FeedbackBasketClient {
   }
 
   // Widget
-  async getWidgetSettings(projectId: string): Promise<{ projectId: string; projectName: string; settings: Record<string, unknown> }> {
+  async getWidgetSettings(projectId: string): Promise<{ projectId: string; projectName: string; settings: WidgetSettings }> {
     return this.request('GET', `/projects/${encodeURIComponent(projectId)}/widget`);
   }
 
-  async updateWidgetSettings(projectId: string, settings: Record<string, unknown>): Promise<{ projectId: string; projectName: string; settings: Record<string, unknown> }> {
+  async updateWidgetSettings(projectId: string, settings: Partial<WidgetSettings>): Promise<{ projectId: string; projectName: string; settings: WidgetSettings }> {
     return this.request('PATCH', `/projects/${encodeURIComponent(projectId)}/widget`, settings);
   }
 

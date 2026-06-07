@@ -72,6 +72,7 @@ export function renderRootHelp(): string {
   lines.push(`${INDENT}${brand.muted('$')} feedbackbasket feedback list --category BUG --status OPEN`);
   lines.push(`${INDENT}${brand.muted('$')} feedbackbasket bugs list --severity high`);
   lines.push(`${INDENT}${brand.muted('$')} feedbackbasket widget script myapp`);
+  lines.push(`${INDENT}${brand.muted('$')} feedbackbasket widget flow myapp --reset-default --enable`);
   lines.push(`${INDENT}${brand.muted('$')} feedbackbasket projects create "My App" --url https://myapp.com`);
   lines.push('');
 

@@ -1,5 +1,19 @@
 # Changelog
 
+## [0.6.0] - 2026-06-07
+
+### Added
+
+- **`feedbackbasket widget flow`** — view, enable, reset, or apply JSON configs for guided feedback types and follow-up questions
+- **Expanded widget settings flags** — configure button size, radius, icon, email visibility, attachments, branding, z-index, and guided mode from the CLI
+- **Submitted details in feedback output** — `feedback show` now displays visitor-selected feedback type and follow-up answers
+
+### Changed
+
+- **Agent skill docs** — updated widget setup guidance so agents can customize guided feedback flows during installation
+
+---
+
 ## [0.5.0] - 2026-05-10
 
 ### Added

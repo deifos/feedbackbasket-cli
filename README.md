@@ -121,9 +121,41 @@ feedbackbasket widget settings myapp
 feedbackbasket widget settings myapp --color "#22c55e" --label "Send Feedback"
 feedbackbasket widget settings myapp --position bottom-left --display modal
 feedbackbasket widget settings myapp --email-required --intro "How can we improve?"
+feedbackbasket widget settings myapp --button-radius 10 --button-size regular
+feedbackbasket widget settings myapp --show-email --allow-attachments --guided
+
+# Configure guided feedback types and follow-up questions
+feedbackbasket widget flow myapp
+feedbackbasket widget flow myapp --enable
+feedbackbasket widget flow myapp --reset-default --enable
+feedbackbasket widget flow myapp --config ./feedback-flow.json
 
 # Get embed code (ready to paste into your HTML)
 feedbackbasket widget script myapp
+```
+
+`widget flow --config` accepts either a `feedbackFlow` object or a JSON object with a `feedbackFlow` key. V1 supports guided mode with `text`, `textarea`, and `single_choice` follow-up questions.
+
+```json
+{
+  "enabled": true,
+  "mode": "guided",
+  "types": [
+    {
+      "id": "bug",
+      "emoji": "🐞",
+      "label": "Bug report",
+      "description": "Something is broken or not working",
+      "questions": [
+        {
+          "id": "steps",
+          "label": "What steps can reproduce it?",
+          "type": "textarea"
+        }
+      ]
+    }
+  ]
+}
 ```
 
 ### Team
