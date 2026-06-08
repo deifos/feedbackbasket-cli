@@ -144,7 +144,7 @@ feedbackbasket feedback note <id> "Reviewing — appears related to auth flow" -
 ```bash
 feedbackbasket bugs list --severity high --agent
 feedbackbasket feedback show <id> --agent
-# Response includes browser, OS, page URL, submitted feedback type, follow-up answers, AI analysis, priority score
+# Response includes browser, OS, page URL, submitted feedback type, follow-up answers, attachment URLs, AI analysis, priority score
 ```
 
 ### Close the loop — reply to the submitter

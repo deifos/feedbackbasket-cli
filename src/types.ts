@@ -89,6 +89,7 @@ export interface Feedback {
   os?: string | null;
   device?: string | null;
   language?: string | null;
+  attachments?: FeedbackAttachment[];
   project: {
     id: string;
     name: string;
@@ -96,6 +97,15 @@ export interface Feedback {
   };
   notes?: FeedbackNote[];
   createdAt: string;
+}
+
+export interface FeedbackAttachment {
+  id: string;
+  url: string;
+  filename: string;
+  size?: number;
+  mimeType?: string;
+  createdAt?: string;
 }
 
 export interface FeedbackNote {

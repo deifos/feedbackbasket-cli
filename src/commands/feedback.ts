@@ -180,6 +180,9 @@ function renderFeedbackList(items: Feedback[]): void {
     if (item.aiSummary) {
       console.log(`  ${brand.hint(item.aiSummary)}`);
     }
+    if (item.attachments && item.attachments.length > 0) {
+      console.log(`  ${brand.muted(`${item.attachments.length} attachment${item.attachments.length === 1 ? '' : 's'}`)}`);
+    }
     console.log();
   }
 }
@@ -225,6 +228,17 @@ function renderFeedbackDetail(item: Feedback): void {
     }
   }
 
+  if (item.attachments && item.attachments.length > 0) {
+    console.log();
+    console.log(brand.bold(`Attachments (${item.attachments.length}):`));
+    for (const attachment of item.attachments) {
+      const size = typeof attachment.size === 'number' ? ` ${brand.muted(formatBytes(attachment.size))}` : '';
+      const type = attachment.mimeType ? ` ${brand.muted(attachment.mimeType)}` : '';
+      console.log(`  ${brand.bold(attachment.filename)}${size}${type}`);
+      console.log(`    ${attachment.url}`);
+    }
+  }
+
   if (item.aiSummary) {
     console.log();
     console.log(brand.bold('AI Summary:'));
@@ -252,4 +266,13 @@ function formatFeedbackType(item: Feedback): string | undefined {
   const label = item.feedbackType.label || item.feedbackType.id;
   if (!label) return undefined;
   return item.feedbackType.emoji ? `${item.feedbackType.emoji} ${label}` : label;
+}
+
+function formatBytes(bytes: number): string {
+  if (!Number.isFinite(bytes) || bytes < 0) return '';
+  if (bytes < 1024) return `${bytes} B`;
+  const kb = bytes / 1024;
+  if (kb < 1024) return `${kb.toFixed(kb >= 10 ? 0 : 1)} KB`;
+  const mb = kb / 1024;
+  return `${mb.toFixed(mb >= 10 ? 0 : 1)} MB`;
 }

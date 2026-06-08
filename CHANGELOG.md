@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.6.1] - 2026-06-08
+
+### Fixed
+
+- **Attachment links in feedback output** — `feedback show` now displays submitted screenshot/image URLs, and feedback/bug JSON responses include attachment metadata for agents
+
+---
+
 ## [0.6.0] - 2026-06-07
 
 ### Added

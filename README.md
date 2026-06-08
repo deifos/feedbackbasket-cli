@@ -83,7 +83,7 @@ feedbackbasket feedback list --category BUG               # Filter by category
 feedbackbasket feedback list --status OPEN                # Filter by status
 feedbackbasket feedback list --sentiment NEGATIVE          # Filter by sentiment
 feedbackbasket feedback list --search "login issue"        # Text search
-feedbackbasket feedback show <id>                          # View single item detail
+feedbackbasket feedback show <id>                          # View detail, including attachment links
 feedbackbasket feedback search "crash on mobile"           # Search shortcut
 
 # Write

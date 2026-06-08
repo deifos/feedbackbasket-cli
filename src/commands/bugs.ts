@@ -142,6 +142,9 @@ function renderBugList(bugs: BugReport[]): void {
     if (bug.aiSummary) {
       console.log(`  ${brand.hint(bug.aiSummary)}`);
     }
+    if (bug.attachments && bug.attachments.length > 0) {
+      console.log(`  ${brand.muted(`${bug.attachments.length} attachment${bug.attachments.length === 1 ? '' : 's'}`)}`);
+    }
     console.log();
   }
 }
