@@ -43,6 +43,8 @@ export interface WidgetSettings {
   position?: string;
   showEmailField?: boolean;
   emailRequired?: boolean;
+  emailReadOnly?: boolean;
+  hideEmailFieldWhenPrefilled?: boolean;
   allowAttachments?: boolean;
   displayMode?: 'modal' | 'popup';
   zIndex?: number;
@@ -84,6 +86,7 @@ export interface Feedback {
     type: FeedbackFlowQuestionType;
     value: string;
   }> | null;
+  metadata?: Record<string, unknown> | null;
   pageUrl?: string | null;
   browser?: string | null;
   os?: string | null;

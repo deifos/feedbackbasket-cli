@@ -239,6 +239,12 @@ function renderFeedbackDetail(item: Feedback): void {
     }
   }
 
+  if (item.metadata && Object.keys(item.metadata).length > 0) {
+    console.log();
+    console.log(brand.bold('Metadata:'));
+    console.log(indentBlock(JSON.stringify(item.metadata, null, 2), '  '));
+  }
+
   if (item.aiSummary) {
     console.log();
     console.log(brand.bold('AI Summary:'));
@@ -266,6 +272,13 @@ function formatFeedbackType(item: Feedback): string | undefined {
   const label = item.feedbackType.label || item.feedbackType.id;
   if (!label) return undefined;
   return item.feedbackType.emoji ? `${item.feedbackType.emoji} ${label}` : label;
+}
+
+function indentBlock(value: string, indent: string): string {
+  return value
+    .split('\n')
+    .map((line) => `${indent}${line}`)
+    .join('\n');
 }
 
 function formatBytes(bytes: number): string {

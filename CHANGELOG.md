@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.7.0] - 2026-06-10
+
+### Added
+
+- **Prefilled email widget settings** - `widget settings` can now configure read-only prefilled emails and hide the email field only when a runtime email is provided
+- **Feedback metadata output** - `feedback show` displays submitted widget metadata when available, and agent JSON output includes the metadata payload returned by the API
+
+---
+
 ## [0.6.1] - 2026-06-08
 
 ### Fixed

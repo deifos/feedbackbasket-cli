@@ -123,6 +123,7 @@ feedbackbasket widget settings myapp --position bottom-left --display modal
 feedbackbasket widget settings myapp --email-required --intro "How can we improve?"
 feedbackbasket widget settings myapp --button-radius 10 --button-size regular
 feedbackbasket widget settings myapp --show-email --allow-attachments --guided
+feedbackbasket widget settings myapp --email-read-only --hide-email-when-prefilled
 
 # Configure guided feedback types and follow-up questions
 feedbackbasket widget flow myapp
@@ -133,6 +134,8 @@ feedbackbasket widget flow myapp --config ./feedback-flow.json
 # Get embed code (ready to paste into your HTML)
 feedbackbasket widget script myapp
 ```
+
+Use `--email-read-only` and `--hide-email-when-prefilled` with runtime `userEmail` values from your app. These settings do not store visitor emails in FeedbackBasket widget settings.
 
 `widget flow --config` accepts either a `feedbackFlow` object or a JSON object with a `feedbackFlow` key. V1 supports guided mode with `text`, `textarea`, and `single_choice` follow-up questions.
 

@@ -97,6 +97,7 @@ feedbackbasket widget settings <project> --color "#22c55e" --label "Send Feedbac
 feedbackbasket widget settings <project> --position bottom-left --display modal
 feedbackbasket widget settings <project> --email-required --intro "How can we improve?"
 feedbackbasket widget settings <project> --show-email --allow-attachments --guided
+feedbackbasket widget settings <project> --email-read-only --hide-email-when-prefilled
 
 # Guided feedback types and follow-up questions
 feedbackbasket widget flow <project>
@@ -104,6 +105,8 @@ feedbackbasket widget flow <project> --enable
 feedbackbasket widget flow <project> --reset-default --enable
 feedbackbasket widget flow <project> --config ./feedback-flow.json
 ```
+
+`email-read-only` and `hide-email-when-prefilled` control behavior only when the host app passes a runtime `userEmail` value. Do not store visitor emails in widget settings.
 
 `widget flow --config` accepts either a `feedbackFlow` object or a JSON object with a `feedbackFlow` key. Use it when an agent needs to customize visitor choices such as Bug report, Feature request, and General feedback. Supported v1 question types are `text`, `textarea`, and `single_choice`.
 
@@ -144,7 +147,7 @@ feedbackbasket feedback note <id> "Reviewing — appears related to auth flow" -
 ```bash
 feedbackbasket bugs list --severity high --agent
 feedbackbasket feedback show <id> --agent
-# Response includes browser, OS, page URL, submitted feedback type, follow-up answers, attachment URLs, AI analysis, priority score
+# Response includes browser, OS, page URL, submitted feedback type, follow-up answers, attachment URLs, metadata, AI analysis, priority score
 ```
 
 ### Close the loop — reply to the submitter
