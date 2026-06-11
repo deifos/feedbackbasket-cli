@@ -6,6 +6,8 @@ import type {
   FeedbackResponse,
   BugReportsResponse,
   FeedbackParams,
+  FeedbackCreateInput,
+  FeedbackCreateResponse,
   BugReportParams,
   UserProfile,
   Project,
@@ -73,6 +75,10 @@ export class FeedbackBasketClient {
 
   async searchFeedback(query: string, opts: { projectId?: string; category?: string; limit?: number } = {}): Promise<FeedbackResponse> {
     return this.getFeedback({ search: query, ...opts } as FeedbackParams);
+  }
+
+  async createFeedback(data: FeedbackCreateInput): Promise<FeedbackCreateResponse> {
+    return this.request<FeedbackCreateResponse>('POST', '/feedback', data);
   }
 
   // Widget

@@ -62,6 +62,8 @@ feedbackbasket feedback show <id>
 feedbackbasket feedback search "crash on mobile" --project <id> --limit 10
 
 # Write
+feedbackbasket feedback create "Login button is broken" --content "Clicking Log in does nothing in Safari." --project <id> --type bug
+feedbackbasket feedback create "Feature idea" --content "Let users export saved views." --project <id> --type feature --metadata source=agent
 feedbackbasket feedback update <id> --status PLANNED --category BUG --sentiment NEGATIVE
 feedbackbasket feedback note <id> "Investigating — appears related to auth flow"
 feedbackbasket feedback delete <id> --yes
@@ -142,6 +144,18 @@ feedbackbasket feedback list --status OPEN --agent
 feedbackbasket feedback update <id> --status UNDER_REVIEW --agent
 feedbackbasket feedback note <id> "Reviewing — appears related to auth flow" --agent
 ```
+
+### Capture new feedback without leaving the terminal
+```bash
+feedbackbasket feedback create "Login button is broken" \
+  --content "Clicking Log in does nothing in Safari." \
+  --project myapp \
+  --type bug \
+  --page-url https://example.com/login \
+  --metadata source=agent \
+  --agent
+```
+Agent mode returns the created feedback ID, dashboard URL, and feedback object. Created feedback is analyzed by AI and follows the project's notification settings.
 
 ### Investigate high-priority bugs
 ```bash

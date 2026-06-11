@@ -69,6 +69,7 @@ export function renderRootHelp(): string {
   // Examples
   lines.push(section('  EXAMPLES'));
   lines.push(`${INDENT}${brand.muted('$')} feedbackbasket projects list`);
+  lines.push(`${INDENT}${brand.muted('$')} feedbackbasket feedback create "Login bug" --project myapp --type bug`);
   lines.push(`${INDENT}${brand.muted('$')} feedbackbasket feedback list --category BUG --status OPEN`);
   lines.push(`${INDENT}${brand.muted('$')} feedbackbasket bugs list --severity high`);
   lines.push(`${INDENT}${brand.muted('$')} feedbackbasket widget script myapp`);

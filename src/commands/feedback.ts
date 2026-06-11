@@ -19,6 +19,7 @@ async function resolveProjectId(client: FeedbackBasketClient, optProject?: strin
 }
 import { createFeedbackUpdateCommand } from './feedback-update.js';
 import { createFeedbackNoteCommand } from './feedback-note.js';
+import { createFeedbackCreateCommand } from './feedback-create.js';
 import { createFeedbackDeleteCommand } from './feedback-delete.js';
 import { createFeedbackBulkUpdateCommand } from './feedback-bulk-update.js';
 import { createFeedbackExportCommand } from './feedback-export.js';
@@ -29,6 +30,7 @@ export function createFeedbackCommand(getWriter: () => OutputWriter): Command {
     .description('View and manage feedback');
 
   // Write subcommands
+  feedback.addCommand(createFeedbackCreateCommand(getWriter));
   feedback.addCommand(createFeedbackUpdateCommand(getWriter));
   feedback.addCommand(createFeedbackNoteCommand(getWriter));
   feedback.addCommand(createFeedbackReplyCommand(getWriter));

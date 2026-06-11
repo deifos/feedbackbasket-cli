@@ -139,6 +139,23 @@ export interface FeedbackResponse {
   pagination: Pagination;
 }
 
+export interface FeedbackCreateInput {
+  projectId: string;
+  content: string;
+  type?: 'bug' | 'feature' | 'general';
+  category?: FeedbackCategory;
+  status?: FeedbackStatus;
+  email?: string;
+  pageUrl?: string;
+  metadata?: Record<string, unknown>;
+}
+
+export interface FeedbackCreateResponse {
+  id: string;
+  url: string;
+  feedback: Feedback;
+}
+
 export interface BugReportsResponse {
   bugReports: BugReport[];
   stats: {

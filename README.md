@@ -22,6 +22,7 @@ feedbackbasket login --manual
 # Start exploring
 feedbackbasket projects list
 feedbackbasket feedback list
+feedbackbasket feedback create "Login button is broken" --project myapp --type bug
 feedbackbasket bugs list --severity high
 ```
 
@@ -35,6 +36,7 @@ Any AI agent with shell access (Claude Code, Codex, Cursor, OpenCode) can use th
 # Agents should use --agent flag for raw JSON output
 feedbackbasket projects list --agent
 feedbackbasket feedback list --category BUG --agent
+feedbackbasket feedback create "Login button is broken" --content "Clicking Log in does nothing in Safari." --project myapp --type bug --agent
 feedbackbasket feedback update <id> --status PLANNED --agent
 feedbackbasket widget script myproject --agent
 ```
@@ -87,6 +89,8 @@ feedbackbasket feedback show <id>                          # View detail, includ
 feedbackbasket feedback search "crash on mobile"           # Search shortcut
 
 # Write
+feedbackbasket feedback create "Title" --content "Body" --project myapp
+feedbackbasket feedback create "Login bug" --content "Clicking Log in does nothing" --project myapp --type bug --page-url https://example.com/login
 feedbackbasket feedback update <id> --status PLANNED       # Update status
 feedbackbasket feedback update <id> --category BUG         # Update category
 feedbackbasket feedback reply <id> "Thanks for reporting!" # Email the submitter

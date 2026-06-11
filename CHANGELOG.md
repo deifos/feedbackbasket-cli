@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.8.0] - 2026-06-11
+
+### Added
+
+- **`feedbackbasket feedback create`** - create feedback from the terminal with project, type, category, status, email, page URL, metadata, and agent JSON output support
+
+---
+
 ## [0.7.0] - 2026-06-10
 
 ### Added
