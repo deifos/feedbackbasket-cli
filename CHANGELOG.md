@@ -1,10 +1,27 @@
 # Changelog
 
+## [0.9.0] - 2026-06-11
+
+### Added
+
+- **Widget reply delivery** - `feedback reply` now supports `--delivery email|widget|both` so agents can reply in the widget thread, by email, or both
+- **Widget thread visibility** - `feedback show` now includes whether feedback has an active widget thread
+
+### Changed
+
+- **Agent reply safety guidance** - the packaged skill now requires agents to verify reply delivery method before responding
+
+---
+
 ## [0.8.0] - 2026-06-11
 
 ### Added
 
 - **`feedbackbasket feedback create`** - create feedback from the terminal with project, type, category, status, email, page URL, metadata, and agent JSON output support
+
+### Changed
+
+- **Agent reply safety guidance** - the packaged skill now tells agents to ask for a reply-to email before sending email replies when no project default is configured, and to use widget/dashboard replies for widget-only feedback
 
 ---
 

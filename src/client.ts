@@ -8,6 +8,7 @@ import type {
   FeedbackParams,
   FeedbackCreateInput,
   FeedbackCreateResponse,
+  FeedbackReplyResponse,
   BugReportParams,
   UserProfile,
   Project,
@@ -103,13 +104,15 @@ export class FeedbackBasketClient {
     return this.request('POST', `/feedback/${encodeURIComponent(feedbackId)}/notes`, { content });
   }
 
-  async sendReply(feedbackId: string, content: string, replyToEmail?: string): Promise<{ reply: { id: string; content: string; replyToEmail: string; sentBy: string; createdAt: string }; sentTo: string }> {
-    const body: Record<string, string> = { content };
+  async sendReply(feedbackId: string, content: string, opts: { replyToEmail?: string; destinations?: Array<'email' | 'widget'> } = {}): Promise<FeedbackReplyResponse> {
+    const body: { content: string; replyToEmail?: string; destinations?: Array<'email' | 'widget'> } = { content };
+    if (opts.destinations) body.destinations = opts.destinations;
+    const replyToEmail = opts.replyToEmail;
     if (replyToEmail) body['replyToEmail'] = replyToEmail;
     return this.request('POST', `/feedback/${encodeURIComponent(feedbackId)}/replies`, body);
   }
 
-  async listReplies(feedbackId: string): Promise<{ replies: Array<{ id: string; content: string; replyToEmail: string; sentBy: string; createdAt: string }>; total: number }> {
+  async listReplies(feedbackId: string): Promise<{ replies: Array<{ id: string; content: string; replyToEmail: string; sentBy: string; createdAt: string }>; messages?: NonNullable<FeedbackReplyResponse['message']>[]; total: number }> {
     return this.request('GET', `/feedback/${encodeURIComponent(feedbackId)}/replies`);
   }
 

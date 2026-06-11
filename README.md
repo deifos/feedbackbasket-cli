@@ -93,7 +93,9 @@ feedbackbasket feedback create "Title" --content "Body" --project myapp
 feedbackbasket feedback create "Login bug" --content "Clicking Log in does nothing" --project myapp --type bug --page-url https://example.com/login
 feedbackbasket feedback update <id> --status PLANNED       # Update status
 feedbackbasket feedback update <id> --category BUG         # Update category
-feedbackbasket feedback reply <id> "Thanks for reporting!" # Email the submitter
+feedbackbasket feedback reply <id> "Thanks!" --delivery email --reply-to support@example.com
+feedbackbasket feedback reply <id> "Thanks!" --delivery widget
+feedbackbasket feedback reply <id> "Thanks!" --delivery both --reply-to support@example.com
 feedbackbasket feedback replies <id>                       # List sent replies
 feedbackbasket feedback note <id> "Investigating this..."  # Add internal note
 feedbackbasket feedback delete <id>                        # Delete feedback

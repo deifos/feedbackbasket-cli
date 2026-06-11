@@ -4,6 +4,7 @@ export type FeedbackStatus = 'OPEN' | 'UNDER_REVIEW' | 'PLANNED' | 'IN_PROGRESS'
 export type FeedbackCategory = 'BUG' | 'FEATURE_REQUEST' | 'IMPROVEMENT' | 'QUESTION';
 export type Sentiment = 'POSITIVE' | 'NEGATIVE' | 'NEUTRAL';
 export type Severity = 'high' | 'medium' | 'low';
+export type ReplyDelivery = 'email' | 'widget' | 'both';
 export type FeedbackFlowQuestionType = 'text' | 'textarea' | 'single_choice';
 
 export interface FeedbackFlowQuestion {
@@ -92,6 +93,7 @@ export interface Feedback {
   os?: string | null;
   device?: string | null;
   language?: string | null;
+  hasWidgetAccess?: boolean;
   attachments?: FeedbackAttachment[];
   project: {
     id: string;
@@ -154,6 +156,26 @@ export interface FeedbackCreateResponse {
   id: string;
   url: string;
   feedback: Feedback;
+}
+
+export interface FeedbackReplyResponse {
+  reply: {
+    id: string;
+    content: string;
+    replyToEmail: string;
+    sentBy: string;
+    createdAt: string;
+  } | null;
+  message: {
+    id: string;
+    content: string;
+    delivery: 'WIDGET' | 'EMAIL' | 'BOTH';
+    sentByName: string | null;
+    replyId: string | null;
+    createdAt: string;
+  } | null;
+  sentTo: string | null;
+  destinations: Array<'email' | 'widget'>;
 }
 
 export interface BugReportsResponse {

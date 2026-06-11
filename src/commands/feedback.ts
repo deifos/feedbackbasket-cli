@@ -207,6 +207,7 @@ function renderFeedbackDetail(item: Feedback): void {
     ['OS', item.os],
     ['Device', item.device],
     ['Language', item.language],
+    ['Widget Thread', item.hasWidgetAccess ? 'Yes' : null],
     ['Created', item.createdAt],
   ];
 

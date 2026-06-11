@@ -69,9 +69,10 @@ feedbackbasket feedback note <id> "Investigating — appears related to auth flo
 feedbackbasket feedback delete <id> --yes
 feedbackbasket feedback bulk-update --status CLOSED --ids id1,id2,id3
 
-# Reply to submitter via email
-feedbackbasket feedback reply <id> "Thanks for reporting — we pushed a fix!"
-feedbackbasket feedback reply <id> "<content>" --reply-to vlad@example.com  # override reply-to
+# Reply to submitter by email, widget thread, or both
+feedbackbasket feedback reply <id> "Thanks for reporting — we pushed a fix!" --delivery email --reply-to support@example.com
+feedbackbasket feedback reply <id> "<content>" --delivery widget
+feedbackbasket feedback reply <id> "<content>" --delivery both --reply-to support@example.com
 feedbackbasket feedback replies <id>                                          # list past replies
 
 # Export
@@ -166,18 +167,22 @@ feedbackbasket feedback show <id> --agent
 
 ### Close the loop — reply to the submitter
 ```bash
-# Agent reads context, drafts its own reply, sends it
-feedbackbasket feedback show <id> --agent                    # read context + project.replyToEmail
-feedbackbasket feedback reply <id> "<drafted response>" --agent
+# Agent reads context, asks which delivery method to use, then sends it
+feedbackbasket feedback show <id> --agent                    # read email, hasWidgetAccess, project.replyToEmail
+feedbackbasket feedback reply <id> "<drafted response>" --delivery widget --agent
+feedbackbasket feedback reply <id> "<drafted response>" --delivery email --reply-to support@example.com --agent
+feedbackbasket feedback reply <id> "<drafted response>" --delivery both --reply-to support@example.com --agent
 feedbackbasket feedback update <id> --status COMPLETE --agent
 feedbackbasket feedback note <id> "Replied via CLI" --agent
 ```
-**Important:** If `feedback show` returns `project.replyToEmail: null`, the agent MUST either:
-1. Pass `--reply-to <email>` with an explicit address, OR
-2. Ask the human which reply-to email to use (the account owner's email is a reasonable default, but requires user confirmation), OR
-3. Set a project default first: `feedbackbasket projects update <project> --reply-to <email>`
+**Important reply safety rules:**
+- Before replying, the agent MUST inspect `feedback show --agent`, then ask the human which delivery method to use: `email`, `widget`, or `both`, unless the human already specified it in the current conversation.
+- If `feedback show` returns `email: null`, do not use `--delivery email` or `--delivery both`. If `hasWidgetAccess: true`, use `--delivery widget`; otherwise ask the human how they want to respond.
+- If `hasWidgetAccess: false`, do not use `--delivery widget` or `--delivery both`.
+- If the delivery includes email and `project.replyToEmail: null`, the agent MUST ask the human which reply-to email to use before sending. Do not use the account owner's email, token owner's email, or any remembered address without explicit confirmation in the current conversation.
+- After the human confirms a reply-to address, pass it explicitly with `--reply-to <email>`, or set a project default first with `feedbackbasket projects update <project> --reply-to <email>`.
 
-Never silently guess a reply-to address — it becomes the "From" address the customer sees.
+Never silently guess a reply-to address. It becomes the "From" address the customer sees.
 
 ### Export for analysis
 ```bash
