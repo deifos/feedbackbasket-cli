@@ -41,6 +41,8 @@ feedbackbasket feedback update <id> --status PLANNED --agent
 feedbackbasket widget script myproject --agent
 ```
 
+When installing or configuring a widget for the current app, agents should not rely on the CLI default project. First run `feedbackbasket projects list --agent`, match the current app by its real website URL or clearly matching project name, and only create a new project after confirming no existing project belongs to this app. If the only known URL is `localhost`, ask for the production, staging, preview, or intended public URL before creating the project.
+
 ### Install Claude Code Skill
 
 ```bash

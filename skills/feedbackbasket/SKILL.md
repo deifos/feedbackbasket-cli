@@ -53,6 +53,14 @@ feedbackbasket projects delete <name-or-id> --yes
 
 All project commands accept **name or ID**. Names are matched case-insensitively with fuzzy suggestions on typos.
 
+**Project selection rule for widget installs:** when the user asks to add a FeedbackBasket widget, bubble, popup, modal, or feedback button to the current app, first resolve the FeedbackBasket project for this app. Do not use the CLI default project just because one is configured.
+
+1. Identify the current app's real website URL or intended public URL from the user, app config, docs, or existing FeedbackBasket embed code.
+2. Run `feedbackbasket projects list --agent` and look for an existing project whose `url` matches that site or whose name clearly matches the current app.
+3. If exactly one project matches, use that project ID/name for `widget settings`, `widget script`, and feedback commands.
+4. If multiple projects could match, ask the user which one to use.
+5. If no project matches, ask whether to create a new project for this app, then create it with the confirmed real URL. Do not create a project from a localhost URL unless the user explicitly wants a local-only test project.
+
 **Project URL rule for agents:** confirm the real website URL before creating or updating a project. Never use `localhost`, `127.0.0.1`, `0.0.0.0`, `::1`, or a local dev server URL unless the user explicitly says the project is only for local testing. If the repo only exposes a local URL, ask for the production, staging, preview, or intended public URL. Do not guess a public domain from package names, git remotes, or environment variables. For an explicitly local-only test project, pass `--allow-local-url`.
 
 ### Feedback
@@ -150,8 +158,12 @@ feedbackbasket setup claude            # Install this skill for Claude Code
 
 ## Common Agent Workflows
 
-### Set up a new project end-to-end
+### Add a widget to the current app
 ```bash
+# First resolve the project for this app. Do not rely on the CLI default project.
+feedbackbasket projects list --agent
+
+# If no existing project matches the current app's real URL/name, create one after confirming the URL.
 feedbackbasket projects create "My App" --url https://myapp.com --agent
 feedbackbasket widget script "My App" --agent
 # Agent gets the embed code, adds it to the HTML

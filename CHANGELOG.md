@@ -6,6 +6,7 @@
 
 - **Project URL safety** - `projects create` and `projects update --url` now require explicit confirmation before saving localhost URLs, and agent mode requires `--allow-local-url`
 - **Packaged skill docs** - agents now ask for the real website URL instead of using localhost, and keep basic modal feedback as the default unless guided feedback is requested
+- **Widget project selection** - agents now resolve the FeedbackBasket project for the current app instead of relying on the CLI default project when installing widgets
 - **Widget guidance** - README, help text, and breadcrumbs no longer nudge users to enable guided feedback by default
 
 ---
