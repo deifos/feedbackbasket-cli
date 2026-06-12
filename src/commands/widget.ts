@@ -145,7 +145,7 @@ export function createWidgetCommand(getWriter: () => OutputWriter): Command {
           breadcrumbs: [
             { action: 'Get embed code', cmd: `feedbackbasket widget script ${projectId}` },
             { action: 'View settings', cmd: `feedbackbasket widget settings ${projectId}` },
-            { action: 'Configure guided questions', cmd: `feedbackbasket widget flow ${projectId} --enable` },
+            { action: 'Configure guided questions', cmd: `feedbackbasket widget flow ${projectId}` },
           ],
         });
       } else {
@@ -160,7 +160,7 @@ export function createWidgetCommand(getWriter: () => OutputWriter): Command {
           summary: `Widget settings for "${result.projectName}"`,
           breadcrumbs: [
             { action: 'Update color', cmd: `feedbackbasket widget settings ${projectId} --color "#22c55e"` },
-            { action: 'Enable guided flow', cmd: `feedbackbasket widget flow ${projectId} --enable` },
+            { action: 'View guided flow', cmd: `feedbackbasket widget flow ${projectId}` },
             { action: 'Get embed code', cmd: `feedbackbasket widget script ${projectId}` },
           ],
         });
@@ -228,8 +228,8 @@ export function createWidgetCommand(getWriter: () => OutputWriter): Command {
       writer.ok(result.settings.feedbackFlow ?? DEFAULT_FEEDBACK_FLOW, {
         summary: `Guided feedback flow for "${result.projectName}"`,
         breadcrumbs: [
-          { action: 'Enable guided flow', cmd: `feedbackbasket widget flow ${projectId} --enable` },
-          { action: 'Reset templates', cmd: `feedbackbasket widget flow ${projectId} --reset-default --enable` },
+          { action: 'Enable guided flow if requested', cmd: `feedbackbasket widget flow ${projectId} --enable` },
+          { action: 'Reset templates if requested', cmd: `feedbackbasket widget flow ${projectId} --reset-default --enable` },
           { action: 'Apply JSON config', cmd: `feedbackbasket widget flow ${projectId} --config ./feedback-flow.json` },
         ],
       });

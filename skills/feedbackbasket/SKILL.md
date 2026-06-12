@@ -53,6 +53,8 @@ feedbackbasket projects delete <name-or-id> --yes
 
 All project commands accept **name or ID**. Names are matched case-insensitively with fuzzy suggestions on typos.
 
+**Project URL rule for agents:** confirm the real website URL before creating or updating a project. Never use `localhost`, `127.0.0.1`, `0.0.0.0`, `::1`, or a local dev server URL unless the user explicitly says the project is only for local testing. If the repo only exposes a local URL, ask for the production, staging, preview, or intended public URL. Do not guess a public domain from package names, git remotes, or environment variables. For an explicitly local-only test project, pass `--allow-local-url`.
+
 ### Feedback
 ```bash
 # Read
@@ -99,13 +101,13 @@ feedbackbasket widget settings <project>
 feedbackbasket widget settings <project> --color "#22c55e" --label "Send Feedback"
 feedbackbasket widget settings <project> --position bottom-left --display modal
 feedbackbasket widget settings <project> --email-required --intro "How can we improve?"
-feedbackbasket widget settings <project> --show-email --allow-attachments --guided
+feedbackbasket widget settings <project> --show-email --allow-attachments
 feedbackbasket widget settings <project> --email-read-only --hide-email-when-prefilled
 
 # Guided feedback types and follow-up questions
 feedbackbasket widget flow <project>
-feedbackbasket widget flow <project> --enable
-feedbackbasket widget flow <project> --reset-default --enable
+feedbackbasket widget flow <project> --enable  # only when the user chooses guided feedback
+feedbackbasket widget flow <project> --reset-default --enable  # only when the user chooses guided feedback
 feedbackbasket widget flow <project> --config ./feedback-flow.json
 ```
 
@@ -129,7 +131,9 @@ Passing the trigger element lets popup mode open beside the custom button. Calli
 
 `email-read-only` and `hide-email-when-prefilled` control behavior only when the host app passes a runtime `userEmail` value. Do not store visitor emails in widget settings.
 
-`widget flow --config` accepts either a `feedbackFlow` object or a JSON object with a `feedbackFlow` key. Use it when an agent needs to customize visitor choices such as Bug report, Feature request, and General feedback. Supported v1 question types are `text`, `textarea`, and `single_choice`.
+Use the basic widget experience by default: `displayMode` stays `modal`, and guided feedback stays disabled. Ask the user before switching to `popup` or enabling guided feedback. If the user does not care, keep modal + basic feedback.
+
+`widget flow --config` accepts either a `feedbackFlow` object or a JSON object with a `feedbackFlow` key. Use it only when the user wants to customize visitor choices such as Bug report, Feature request, and General feedback. Supported v1 question types are `text`, `textarea`, and `single_choice`.
 
 ### Team
 ```bash
@@ -152,8 +156,8 @@ feedbackbasket projects create "My App" --url https://myapp.com --agent
 feedbackbasket widget script "My App" --agent
 # Agent gets the embed code, adds it to the HTML
 feedbackbasket widget settings "My App" --color "#22c55e" --label "Feedback" --agent
-# Optional: enable the guided wizard with Bug, Feature, and General templates
-feedbackbasket widget flow "My App" --reset-default --enable --agent
+# Optional, only when requested: enable the guided wizard with Bug, Feature, and General templates
+# feedbackbasket widget flow "My App" --reset-default --enable --agent
 ```
 
 ### Triage new feedback

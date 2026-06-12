@@ -71,9 +71,11 @@ export function createProjectsCommand(getWriter: () => OutputWriter): Command {
     .description('Create a new project')
     .requiredOption('--url <url>', 'Project URL')
     .option('--description <text>', 'Project description')
+    .option('--allow-local-url', 'Allow localhost URLs for local-only test projects')
     .action(async (name, opts) => {
       const writer = getWriter();
       const client = requireClient();
+      await ensureProjectUrlIsIntentional(opts.url, writer, Boolean(opts.allowLocalUrl));
 
       const result = await client.createProject({
         name,
@@ -105,6 +107,7 @@ export function createProjectsCommand(getWriter: () => OutputWriter): Command {
     .option('--url <url>', 'New project URL')
     .option('--description <text>', 'New project description')
     .option('--reply-to <email>', 'Default reply-to email for feedback replies (empty string to clear)')
+    .option('--allow-local-url', 'Allow localhost URLs for local-only test projects')
     .action(async (idOrName, opts) => {
       const writer = getWriter();
 
@@ -123,6 +126,9 @@ export function createProjectsCommand(getWriter: () => OutputWriter): Command {
       const client = requireClient();
       const resolved = await resolveProject(client, idOrName);
       const id = resolved.id;
+      if (opts.url) {
+        await ensureProjectUrlIsIntentional(opts.url, writer, Boolean(opts.allowLocalUrl));
+      }
 
       const data: Record<string, string | null> = {};
       if (opts.name) data['name'] = opts.name;
@@ -260,4 +266,46 @@ function renderProjectDetail(project: Project): void {
     }
   }
   console.log();
+}
+
+async function ensureProjectUrlIsIntentional(
+  url: string,
+  writer: OutputWriter,
+  allowLocalUrl: boolean,
+): Promise<void> {
+  if (!isLocalProjectUrl(url) || allowLocalUrl) return;
+
+  const message =
+    'Project URL looks like a local development address. Use the production, staging, preview, or intended public website URL, or pass --allow-local-url for a local-only test project.';
+
+  if (writer.isMachineOutput() || !process.stdin.isTTY) {
+    throw errUsage(message, 'Example: feedbackbasket projects create "My App" --url https://myapp.com');
+  }
+
+  console.log(`  ${brand.warning('Warning:')} ${message}`);
+  console.log();
+  const confirmed = await confirm('  Use this as a local-only test project URL?', false);
+  if (!confirmed) {
+    throw errUsage(
+      'Project URL change cancelled. Re-run with the real website URL.',
+      'Example: feedbackbasket projects create "My App" --url https://myapp.com',
+    );
+  }
+}
+
+function isLocalProjectUrl(input: string): boolean {
+  try {
+    const url = new URL(input);
+    const hostname = url.hostname.toLowerCase();
+    return (
+      hostname === 'localhost' ||
+      hostname === '127.0.0.1' ||
+      hostname === '0.0.0.0' ||
+      hostname === '::1' ||
+      hostname === '[::1]' ||
+      hostname.endsWith('.localhost')
+    );
+  } catch {
+    return false;
+  }
 }

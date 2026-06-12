@@ -70,10 +70,13 @@ All project commands accept **name or ID** (e.g. `feedbackbasket` or `cmn3c7sgv.
 feedbackbasket projects list                              # List all projects with stats
 feedbackbasket projects show <name-or-id>                 # Project details
 feedbackbasket projects create "My App" --url https://... # Create project
+feedbackbasket projects create "Local Test" --url http://localhost:3000 --allow-local-url
 feedbackbasket projects update myapp --name "New Name"    # Update project
 feedbackbasket projects update myapp --reply-to vlad@example.com  # Set default reply-to email
 feedbackbasket projects delete myapp                      # Delete (with confirmation)
 ```
+
+Use the production, staging, preview, or intended public website URL for projects. The CLI blocks accidental `localhost`/loopback URLs in agent and non-interactive mode unless you pass `--allow-local-url` for an explicitly local-only test project.
 
 ### Feedback
 
@@ -128,13 +131,13 @@ feedbackbasket widget settings myapp --color "#22c55e" --label "Send Feedback"
 feedbackbasket widget settings myapp --position bottom-left --display modal
 feedbackbasket widget settings myapp --email-required --intro "How can we improve?"
 feedbackbasket widget settings myapp --button-radius 10 --button-size regular
-feedbackbasket widget settings myapp --show-email --allow-attachments --guided
+feedbackbasket widget settings myapp --show-email --allow-attachments
 feedbackbasket widget settings myapp --email-read-only --hide-email-when-prefilled
 
 # Configure guided feedback types and follow-up questions
 feedbackbasket widget flow myapp
-feedbackbasket widget flow myapp --enable
-feedbackbasket widget flow myapp --reset-default --enable
+feedbackbasket widget flow myapp --enable                  # guided only when requested
+feedbackbasket widget flow myapp --reset-default --enable  # guided only when requested
 feedbackbasket widget flow myapp --config ./feedback-flow.json
 
 # Get embed code (ready to paste into your HTML)
@@ -152,6 +155,8 @@ For inline trigger mode, load the widget once and call the public API from your 
 Passing the trigger element lets popup mode open beside your custom button. Calling `window.FeedbackWidget.openFeedbackForm()` with no arguments still uses the configured widget position.
 
 Use `--email-read-only` and `--hide-email-when-prefilled` with runtime `userEmail` values from your app. These settings do not store visitor emails in FeedbackBasket widget settings.
+
+The default widget experience is a basic modal. Only switch to popup mode or enable guided feedback when you intentionally want that flow.
 
 `widget flow --config` accepts either a `feedbackFlow` object or a JSON object with a `feedbackFlow` key. V1 supports guided mode with `text`, `textarea`, and `single_choice` follow-up questions.
 
