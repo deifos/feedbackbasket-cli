@@ -247,6 +247,8 @@ export function createWidgetCommand(getWriter: () => OutputWriter): Command {
       const result = await client.getWidgetScript(projectId);
 
       if (!writer.isMachineOutput()) {
+        const settingsResult = await client.getWidgetSettings(projectId);
+
         console.log(brand.bold(`Widget embed code for ${result.projectName}`));
         console.log(divider(50));
         console.log();
@@ -256,6 +258,7 @@ export function createWidgetCommand(getWriter: () => OutputWriter): Command {
         console.log();
         console.log(brand.muted(`  Script URL: ${result.scriptUrl}`));
         console.log();
+        renderInlineTriggerHelp(settingsResult.settings);
       }
 
       writer.ok(result, {
@@ -351,6 +354,29 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 
 function stringValue(value: unknown): string {
   return typeof value === 'string' ? value.trim() : '';
+}
+
+function renderInlineTriggerHelp(settings: WidgetSettings): void {
+  if (settings.triggerMode !== 'inline') return;
+
+  console.log(brand.bold('Custom inline trigger'));
+  console.log(divider(50));
+  console.log();
+  console.log(brand.muted('  Call this from your own button:'));
+  console.log();
+  console.log(`  ${brand.primary('<button onclick="window.FeedbackWidget.openFeedbackForm({ trigger: event.currentTarget })">')}`);
+  console.log(`  ${brand.primary('  Feedback')}`);
+  console.log(`  ${brand.primary('</button>')}`);
+  console.log();
+
+  if (settings.displayMode === 'popup') {
+    console.log(brand.muted('  Passing the trigger keeps popup mode anchored beside your custom button.'));
+  } else {
+    console.log(brand.muted('  Modal mode stays centered; passing the trigger is safe for future popup changes.'));
+  }
+
+  console.log(brand.muted('  Existing calls to window.FeedbackWidget.openFeedbackForm() still work.'));
+  console.log();
 }
 
 function renderWidgetSettings(projectName: string, settings: WidgetSettings): void {

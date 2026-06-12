@@ -109,6 +109,24 @@ feedbackbasket widget flow <project> --reset-default --enable
 feedbackbasket widget flow <project> --config ./feedback-flow.json
 ```
 
+For inline trigger mode, load the widget once and call the public API from the host app's custom button:
+
+```html
+<button onclick="window.FeedbackWidget.openFeedbackForm({ trigger: event.currentTarget })">
+  Feedback
+</button>
+```
+
+In React:
+
+```tsx
+<button onClick={(event) => window.FeedbackWidget.openFeedbackForm({ trigger: event.currentTarget })}>
+  Feedback
+</button>
+```
+
+Passing the trigger element lets popup mode open beside the custom button. Calling `window.FeedbackWidget.openFeedbackForm()` with no arguments still uses the configured widget position.
+
 `email-read-only` and `hide-email-when-prefilled` control behavior only when the host app passes a runtime `userEmail` value. Do not store visitor emails in widget settings.
 
 `widget flow --config` accepts either a `feedbackFlow` object or a JSON object with a `feedbackFlow` key. Use it when an agent needs to customize visitor choices such as Bug report, Feature request, and General feedback. Supported v1 question types are `text`, `textarea`, and `single_choice`.

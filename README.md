@@ -141,6 +141,16 @@ feedbackbasket widget flow myapp --config ./feedback-flow.json
 feedbackbasket widget script myapp
 ```
 
+For inline trigger mode, load the widget once and call the public API from your own button:
+
+```html
+<button onclick="window.FeedbackWidget.openFeedbackForm({ trigger: event.currentTarget })">
+  Feedback
+</button>
+```
+
+Passing the trigger element lets popup mode open beside your custom button. Calling `window.FeedbackWidget.openFeedbackForm()` with no arguments still uses the configured widget position.
+
 Use `--email-read-only` and `--hide-email-when-prefilled` with runtime `userEmail` values from your app. These settings do not store visitor emails in FeedbackBasket widget settings.
 
 `widget flow --config` accepts either a `feedbackFlow` object or a JSON object with a `feedbackFlow` key. V1 supports guided mode with `text`, `textarea`, and `single_choice` follow-up questions.

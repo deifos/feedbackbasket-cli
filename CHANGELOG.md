@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.9.1] - 2026-06-12
+
+### Changed
+
+- **Inline widget trigger guidance** - `widget script` now shows custom button examples for inline widgets, including trigger-aware popup anchoring
+- **Packaged skill docs** - agents now use `openFeedbackForm({ trigger: event.currentTarget })` when installing custom inline trigger buttons
+
+---
+
 ## [0.9.0] - 2026-06-11
 
 ### Added
