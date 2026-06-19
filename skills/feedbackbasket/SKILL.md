@@ -192,6 +192,39 @@ feedbackbasket feedback create "Login button is broken" \
 ```
 Agent mode returns the created feedback ID, dashboard URL, and feedback object. Created feedback is analyzed by AI and follows the project's notification settings.
 
+### File agent-found issues in FeedbackBasket
+
+When the user says "file this in FeedbackBasket", "log this bug", "create feedback for this issue", "add this to FeedbackBasket", or similar, create a concise feedback item for the issue the agent found.
+
+Before creating the item, resolve the target project:
+
+1. If the user explicitly names a FeedbackBasket project, use that project.
+2. If the current repo/app clearly matches exactly one FeedbackBasket project name or project URL from `feedbackbasket projects list --agent`, use that project.
+3. If the CLI default project clearly matches the current repo/app, use it.
+4. If multiple projects are plausible, ask the user which FeedbackBasket project to file it under.
+5. Do not silently guess the project when it is ambiguous.
+
+Keep agent-filed feedback short and dashboard-friendly:
+
+- Title: under 80 characters, action-oriented, no stack traces.
+- Content: 1 to 3 short paragraphs, ideally under 600 characters, focused on the user-visible problem, expected behavior, and actual behavior.
+- Do not paste long logs, full reasoning chains, or broad investigation notes into the body.
+- Put structured context in metadata: `source=agent`, `found_by=<agent>`, `repo=<name>`, `branch=<branch>`, `route=<path>`, `file=<path>`, `severity=<low|medium|high>`, `test=<command>`.
+
+Use:
+
+```bash
+feedbackbasket feedback create "<short title>" \
+  --content "<brief user-visible issue description>" \
+  --project <project-name-or-id> \
+  --type bug \
+  --metadata source=agent \
+  --metadata found_by=codex \
+  --agent
+```
+
+After creation, report the feedback ID and dashboard URL to the user.
+
 ### Investigate high-priority bugs
 ```bash
 feedbackbasket bugs list --severity high --agent

@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.9.3] - 2026-06-19
+
+### Changed
+
+- **Agent issue filing guidance** - the packaged skill now explains how agents should file discovered issues into the right FeedbackBasket project with short descriptions and structured metadata
+
+---
+
 ## [0.9.2] - 2026-06-12
 
 ### Changed
