@@ -1,5 +1,13 @@
 # Changelog
 
+## Unreleased
+
+### Changed
+
+- **Inline widget trigger safety** - docs and packaged skill now explicitly tell agents to use `openFeedbackForm()` instead of internal widget methods such as `open()` or `openModal()`
+
+---
+
 ## [0.9.3] - 2026-06-19
 
 ### Changed

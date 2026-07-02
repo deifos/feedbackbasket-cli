@@ -137,6 +137,8 @@ In React:
 
 Passing the trigger element lets popup mode open beside the custom button. Calling `window.FeedbackWidget.openFeedbackForm()` with no arguments still uses the configured widget position.
 
+Use only the public `openFeedbackForm()` API from the snippet. Do not call internal or undocumented methods such as `open()`, `openModal()`, or direct modal element manipulation; those can exist in the widget bundle but are not stable integration points.
+
 `email-read-only` and `hide-email-when-prefilled` control behavior only when the host app passes a runtime `userEmail` value. Do not store visitor emails in widget settings.
 
 Use the basic widget experience by default: `displayMode` stays `modal`, and guided feedback stays disabled. Ask the user before switching to `popup` or enabling guided feedback. If the user does not care, keep modal + basic feedback.

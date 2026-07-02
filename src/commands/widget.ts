@@ -376,6 +376,7 @@ function renderInlineTriggerHelp(settings: WidgetSettings): void {
   }
 
   console.log(brand.muted('  Existing calls to window.FeedbackWidget.openFeedbackForm() still work.'));
+  console.log(brand.muted('  Do not call internal methods such as open() or openModal().'));
   console.log();
 }
 

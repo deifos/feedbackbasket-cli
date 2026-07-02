@@ -156,6 +156,8 @@ For inline trigger mode, load the widget once and call the public API from your 
 
 Passing the trigger element lets popup mode open beside your custom button. Calling `window.FeedbackWidget.openFeedbackForm()` with no arguments still uses the configured widget position.
 
+Use only the public `openFeedbackForm()` API from the snippet. Do not call internal or undocumented methods such as `open()` or `openModal()`.
+
 Use `--email-read-only` and `--hide-email-when-prefilled` with runtime `userEmail` values from your app. These settings do not store visitor emails in FeedbackBasket widget settings.
 
 The default widget experience is a basic modal. Only switch to popup mode or enable guided feedback when you intentionally want that flow.
