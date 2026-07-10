@@ -30,6 +30,7 @@ export interface FeedbackFlowSettings {
 }
 
 export interface WidgetSettings {
+  captureMode?: 'feedback' | 'waitlist';
   widgetType?: string;
   triggerMode?: 'floating' | 'inline';
   buttonColor?: string;
@@ -50,6 +51,8 @@ export interface WidgetSettings {
   displayMode?: 'modal' | 'popup';
   zIndex?: number;
   showBranding?: boolean;
+  allowConsoleErrors?: boolean;
+  errorTrackingEnabled?: boolean;
   feedbackFlow?: FeedbackFlowSettings;
 }
 
@@ -134,6 +137,27 @@ export interface Pagination {
   limit: number;
   offset: number;
   hasMore: boolean;
+}
+
+export interface WaitlistEntry {
+  id: string;
+  email: string;
+  name?: string | null;
+  pageUrl?: string | null;
+  referrerUrl?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface WaitlistResponse {
+  project: {
+    id: string;
+    name: string;
+    captureMode: 'feedback' | 'waitlist';
+  };
+  entries: WaitlistEntry[];
+  totalSignups: number;
+  pagination: Pagination;
 }
 
 export interface FeedbackResponse {

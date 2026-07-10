@@ -56,6 +56,7 @@ export function createWidgetCommand(getWriter: () => OutputWriter): Command {
   widget
     .command('settings [project]')
     .description('View or update widget settings')
+    .option('--capture-mode <mode>', 'Capture mode (feedback, waitlist)')
     .option('--color <hex>', 'Button color (e.g. #22c55e)')
     .option('--label <text>', 'Button label')
     .option('--position <pos>', 'Widget position (bottom-right, bottom-left, middle-right-edge, middle-left-edge, bottom-right-edge, bottom-left-edge)')
@@ -82,6 +83,10 @@ export function createWidgetCommand(getWriter: () => OutputWriter): Command {
     .option('--no-show-icon', 'Hide the icon')
     .option('--show-branding', 'Show FeedbackBasket branding')
     .option('--no-show-branding', 'Hide FeedbackBasket branding when plan allows it')
+    .option('--allow-console-errors', 'Let visitors include captured console errors with feedback')
+    .option('--no-allow-console-errors', 'Hide the console error sharing option')
+    .option('--error-tracking', 'Enable automatic browser error tracking')
+    .option('--no-error-tracking', 'Disable automatic browser error tracking')
     .option('--z-index <value>', 'Widget z-index')
     .option('--guided', 'Enable guided feedback types')
     .option('--disable-guided', 'Disable guided feedback types')
@@ -90,22 +95,27 @@ export function createWidgetCommand(getWriter: () => OutputWriter): Command {
       const client = requireClient();
       const projectId = await resolveProjectId(client, projectArg);
 
-      const hasUpdates = opts.color || opts.label || opts.position || opts.intro ||
+      const hasUpdates = opts.captureMode || opts.color || opts.label || opts.position || opts.intro ||
         opts.success || opts.trigger || opts.display ||
         opts.buttonRadius || opts.buttonSize || opts.icon ||
         opts.emailRequired !== undefined || opts.showEmail !== undefined ||
         opts.emailReadOnly !== undefined || opts.hideEmailWhenPrefilled !== undefined ||
         opts.allowAttachments !== undefined || opts.iconOnly !== undefined ||
         opts.showIcon !== undefined || opts.showBranding !== undefined ||
+        opts.allowConsoleErrors !== undefined || opts.errorTracking !== undefined ||
         opts.zIndex || opts.guided || opts.disableGuided;
 
       if (hasUpdates) {
         if (opts.guided && opts.disableGuided) {
           throw errUsage('Choose either --guided or --disable-guided, not both');
         }
+        if (opts.captureMode && !['feedback', 'waitlist'].includes(opts.captureMode)) {
+          throw errUsage('Capture mode must be feedback or waitlist');
+        }
 
         // Update mode
         const settings: Partial<WidgetSettings> = {};
+        if (opts.captureMode) settings.captureMode = opts.captureMode;
         if (opts.color) settings.buttonColor = opts.color;
         if (opts.label) settings.buttonLabel = opts.label;
         if (opts.position) settings.position = opts.position;
@@ -124,6 +134,8 @@ export function createWidgetCommand(getWriter: () => OutputWriter): Command {
         if (opts.iconOnly !== undefined) settings.iconOnly = opts.iconOnly;
         if (opts.showIcon !== undefined) settings.showIcon = opts.showIcon;
         if (opts.showBranding !== undefined) settings.showBranding = opts.showBranding;
+        if (opts.allowConsoleErrors !== undefined) settings.allowConsoleErrors = opts.allowConsoleErrors;
+        if (opts.errorTracking !== undefined) settings.errorTrackingEnabled = opts.errorTracking;
         if (opts.zIndex) settings.zIndex = parseInt(opts.zIndex, 10);
         if (opts.guided || opts.disableGuided) {
           const current = await client.getWidgetSettings(projectId);
@@ -258,10 +270,27 @@ export function createWidgetCommand(getWriter: () => OutputWriter): Command {
         console.log();
         console.log(brand.muted(`  Script URL: ${result.scriptUrl}`));
         console.log();
-        renderInlineTriggerHelp(settingsResult.settings);
+        if (settingsResult.settings.captureMode === 'waitlist') {
+          renderWaitlistHelp();
+        } else {
+          renderInlineTriggerHelp(settingsResult.settings);
+        }
       }
 
-      writer.ok(result, {
+      const output = result.captureMode === 'waitlist'
+        ? {
+            ...result,
+            waitlist: {
+              formAttribute: 'data-feedbackbasket-waitlist',
+              requiredField: 'email',
+              optionalField: 'name',
+              stateAttribute: 'data-feedbackbasket-state',
+              events: ['feedbackbasket:waitlist:success', 'feedbackbasket:waitlist:error'],
+            },
+          }
+        : result;
+
+      writer.ok(output, {
         summary: `Embed code for "${result.projectName}"`,
         breadcrumbs: [
           { action: 'Customize widget', cmd: `feedbackbasket widget settings ${projectId}` },
@@ -380,12 +409,30 @@ function renderInlineTriggerHelp(settings: WidgetSettings): void {
   console.log();
 }
 
+function renderWaitlistHelp(): void {
+  console.log(brand.bold('Waitlist form setup'));
+  console.log(divider(50));
+  console.log();
+  console.log(brand.muted('  Keep the project script installed and annotate your own form:'));
+  console.log();
+  console.log(`  ${brand.primary('<form data-feedbackbasket-waitlist>')}`);
+  console.log(`  ${brand.primary('  <input name="name" autocomplete="name">')}`);
+  console.log(`  ${brand.primary('  <input name="email" type="email" autocomplete="email" required>')}`);
+  console.log(`  ${brand.primary('  <button type="submit">Join the waitlist</button>')}`);
+  console.log(`  ${brand.primary('</form>')}`);
+  console.log();
+  console.log(brand.muted('  Email is required; name is optional. The script handles submission without replacing your styling.'));
+  console.log(brand.muted('  Read data-feedbackbasket-state for loading, success, and error UI.'));
+  console.log();
+}
+
 function renderWidgetSettings(projectName: string, settings: WidgetSettings): void {
   console.log(brand.bold(`Widget settings — ${projectName}`));
   console.log(divider(40));
   console.log();
 
   const display: [string, string][] = [
+    ['Capture Mode', String(settings.captureMode ?? 'feedback')],
     ['Button Color', String(settings.buttonColor ?? '')],
     ['Button Label', String(settings.buttonLabel ?? '')],
     ['Button Radius', String(settings.buttonRadius ?? '')],
@@ -406,6 +453,8 @@ function renderWidgetSettings(projectName: string, settings: WidgetSettings): vo
     ['Success Message', String(settings.successMessage ?? '')],
     ['Z-Index', String(settings.zIndex ?? '')],
     ['Show Branding', String(settings.showBranding ?? true)],
+    ['Share Console Errors', String(settings.allowConsoleErrors ?? false)],
+    ['Error Tracking', String(settings.errorTrackingEnabled ?? false)],
   ];
 
   for (const [label, value] of display) {

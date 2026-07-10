@@ -11,6 +11,7 @@ import { createDoctorCommand } from './commands/doctor.js';
 import { createSetupCommand } from './commands/setup.js';
 import { createWidgetCommand } from './commands/widget.js';
 import { createTeamCommand } from './commands/team.js';
+import { createWaitlistCommand } from './commands/waitlist.js';
 import { renderRootHelp } from './help.js';
 
 let writer: OutputWriter;
@@ -65,6 +66,7 @@ export function run(): void {
   program.addCommand(createFeedbackCommand(getWriter));
   program.addCommand(createBugsCommand(getWriter));
   program.addCommand(createWidgetCommand(getWriter));
+  program.addCommand(createWaitlistCommand(getWriter));
   program.addCommand(createTeamCommand(getWriter));
   program.addCommand(createDoctorCommand(getWriter));
   program.addCommand(createSetupCommand(getWriter));

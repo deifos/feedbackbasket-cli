@@ -1,6 +1,5 @@
-import axios, { AxiosInstance, AxiosError } from 'axios';
 import { USER_AGENT } from './version.js';
-import { errAuth, errForbidden, errRateLimit, errNetwork, errAPI } from './output/errors.js';
+import { CLIError, errAuth, errForbidden, errRateLimit, errNetwork, errAPI } from './output/errors.js';
 import type {
   ProjectsResponse,
   FeedbackResponse,
@@ -14,21 +13,16 @@ import type {
   Project,
   Feedback,
   WidgetSettings,
+  WaitlistResponse,
 } from './types.js';
 
 export class FeedbackBasketClient {
-  private http: AxiosInstance;
+  private readonly apiBaseUrl: string;
+  private readonly token: string;
 
   constructor(token: string, baseUrl: string) {
-    this.http = axios.create({
-      baseURL: `${baseUrl}/api/v1`,
-      timeout: 30_000,
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json',
-        'User-Agent': USER_AGENT,
-      },
-    });
+    this.apiBaseUrl = `${baseUrl.replace(/\/$/, '')}/api/v1`;
+    this.token = token;
   }
 
   async me(): Promise<UserProfile> {
@@ -91,8 +85,18 @@ export class FeedbackBasketClient {
     return this.request('PATCH', `/projects/${encodeURIComponent(projectId)}/widget`, settings);
   }
 
-  async getWidgetScript(projectId: string): Promise<{ projectId: string; projectName: string; embedCode: string; scriptUrl: string }> {
+  async getWidgetScript(projectId: string): Promise<{ projectId: string; projectName: string; captureMode: 'feedback' | 'waitlist'; embedCode: string; scriptUrl: string }> {
     return this.request('GET', `/projects/${encodeURIComponent(projectId)}/widget-script`);
+  }
+
+  async getWaitlist(projectId: string, params: { search?: string; limit?: number; offset?: number } = {}): Promise<WaitlistResponse> {
+    const query = buildQuery(params as Record<string, unknown>);
+    return this.request('GET', `/projects/${encodeURIComponent(projectId)}/waitlist${query}`);
+  }
+
+  async exportWaitlist(projectId: string): Promise<string> {
+    const data = await this.request<unknown>('GET', `/projects/${encodeURIComponent(projectId)}/waitlist/export`);
+    return typeof data === 'string' ? data : JSON.stringify(data, null, 2);
   }
 
   // Write operations
@@ -133,8 +137,8 @@ export class FeedbackBasketClient {
   }
 
   async exportFeedback(projectId: string, format: 'csv' | 'md' | 'json' = 'csv'): Promise<string> {
-    const response = await this.http.get(`/projects/${encodeURIComponent(projectId)}/export?format=${format}`);
-    return typeof response.data === 'string' ? response.data : JSON.stringify(response.data, null, 2);
+    const data = await this.request<unknown>('GET', `/projects/${encodeURIComponent(projectId)}/export?format=${format}`);
+    return typeof data === 'string' ? data : JSON.stringify(data, null, 2);
   }
 
   // Team
@@ -151,35 +155,56 @@ export class FeedbackBasketClient {
   }
 
   private async request<T>(method: string, path: string, data?: unknown): Promise<T> {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 30_000);
+
     try {
-      const response = await this.http.request<T>({ method, url: path, data });
-      return response.data;
+      const response = await fetch(`${this.apiBaseUrl}${path}`, {
+        method,
+        signal: controller.signal,
+        headers: {
+          'Authorization': `Bearer ${this.token}`,
+          'Content-Type': 'application/json',
+          'User-Agent': USER_AGENT,
+        },
+        body: data === undefined ? undefined : JSON.stringify(data),
+      });
+
+      const contentType = response.headers.get('content-type') ?? '';
+      const payload: unknown = contentType.includes('application/json')
+        ? await response.json().catch(() => null)
+        : await response.text();
+
+      if (!response.ok) {
+        const message = getErrorMessage(payload, response.statusText);
+        switch (response.status) {
+          case 401: throw errAuth(message);
+          case 403: throw errForbidden(message);
+          case 404: throw errAPI(404, message);
+          case 429: throw errRateLimit();
+          default: throw errAPI(response.status, message);
+        }
+      }
+
+      return payload as T;
     } catch (error) {
-      throw this.handleError(error);
+      if (error instanceof CLIError) throw error;
+      const cause = error instanceof Error ? error : new Error(String(error));
+      throw errNetwork(cause);
+    } finally {
+      clearTimeout(timeout);
     }
   }
+}
 
-  private handleError(error: unknown): Error {
-    if (error instanceof AxiosError) {
-      const status = error.response?.status;
-      const message = error.response?.data?.error
-        ?? error.response?.data?.message
-        ?? error.message;
-
-      if (!error.response) {
-        return errNetwork(error);
-      }
-
-      switch (status) {
-        case 401: return errAuth(message);
-        case 403: return errForbidden(message);
-        case 404: return errAPI(404, message);
-        case 429: return errRateLimit();
-        default:  return errAPI(status ?? 500, message);
-      }
-    }
-    return error instanceof Error ? error : new Error(String(error));
+function getErrorMessage(payload: unknown, fallback: string): string {
+  if (payload && typeof payload === 'object') {
+    const value = payload as Record<string, unknown>;
+    if (typeof value.error === 'string') return value.error;
+    if (typeof value.message === 'string') return value.message;
   }
+  if (typeof payload === 'string' && payload.trim()) return payload;
+  return fallback || 'Request failed';
 }
 
 function buildQuery(params: Record<string, unknown>): string {

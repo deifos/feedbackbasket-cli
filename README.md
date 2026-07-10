@@ -129,12 +129,15 @@ feedbackbasket bugs stats --project myapp   # Per-project stats
 feedbackbasket widget settings myapp
 
 # Update widget configuration
+feedbackbasket widget settings myapp --capture-mode waitlist
+feedbackbasket widget settings myapp --capture-mode feedback
 feedbackbasket widget settings myapp --color "#22c55e" --label "Send Feedback"
 feedbackbasket widget settings myapp --position bottom-left --display modal
 feedbackbasket widget settings myapp --email-required --intro "How can we improve?"
 feedbackbasket widget settings myapp --button-radius 10 --button-size regular
 feedbackbasket widget settings myapp --show-email --allow-attachments
 feedbackbasket widget settings myapp --email-read-only --hide-email-when-prefilled
+feedbackbasket widget settings myapp --error-tracking --allow-console-errors
 
 # Configure guided feedback types and follow-up questions
 feedbackbasket widget flow myapp
@@ -145,6 +148,19 @@ feedbackbasket widget flow myapp --config ./feedback-flow.json
 # Get embed code (ready to paste into your HTML)
 feedbackbasket widget script myapp
 ```
+
+Waitlist mode uses the same project script. Add `data-feedbackbasket-waitlist` to your own form, with a required `email` field and optional `name` field. The CLI's `widget script` output shows a starter form when waitlist mode is active.
+
+### Waitlist
+
+```bash
+feedbackbasket waitlist list myapp
+feedbackbasket waitlist list myapp --search "@example.com" --limit 50 --offset 0
+feedbackbasket waitlist list myapp --agent
+feedbackbasket waitlist export myapp
+```
+
+Waitlist listing returns emails, optional names, source pages, total counts, the active capture mode, and pagination. Export prints the dashboard-compatible CSV to stdout.
 
 For inline trigger mode, load the widget once and call the public API from your own button:
 

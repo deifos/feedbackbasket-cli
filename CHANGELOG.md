@@ -2,9 +2,21 @@
 
 ## Unreleased
 
+---
+
+## [0.10.0] - 2026-07-10
+
+### Added
+
+- **Waitlist capture mode** - `widget settings --capture-mode waitlist|feedback` switches the installed project script between waitlist and feedback capture
+- **Waitlist management** - `waitlist list` supports search and pagination, while `waitlist export` provides the dashboard CSV from the terminal
+- **Widget security settings** - configure automatic error tracking and visitor-approved console error sharing from the CLI
+
 ### Changed
 
 - **Inline widget trigger safety** - docs and packaged skill now explicitly tell agents to use `openFeedbackForm()` instead of internal widget methods such as `open()` or `openModal()`
+- **Waitlist integration guidance** - `widget script`, README, and the packaged skill explain how to annotate existing forms for waitlist capture
+- **Native HTTP client** - removed Axios and its transitive dependency tree in favor of Node's built-in `fetch`
 
 ---
 

@@ -1,21 +1,11 @@
 ---
-name: FeedbackBasket
-description: Manage FeedbackBasket projects, feedback, bugs, widgets, and team from the command line
-triggers:
-  - feedbackbasket
-  - feedback
-  - bugs
-  - bug reports
-  - user feedback
-  - widget
-  - feedback widget
-invocable: true
-argument-hint: "<command> [options]"
+name: feedbackbasket
+description: Manage FeedbackBasket projects, feedback, bugs, feedback widgets, waitlist capture, and teams from the command line. Use when an agent needs to configure FeedbackBasket, collect feedback or waitlist signups, query feedback, or manage a FeedbackBasket project.
 ---
 
 # FeedbackBasket CLI
 
-Full command-line interface for managing feedback, bug reports, projects, widgets, and team in FeedbackBasket. Works with any AI agent that can run shell commands.
+Full command-line interface for managing feedback, waitlist signups, bug reports, projects, widgets, and teams in FeedbackBasket. Works with any AI agent that can run shell commands.
 
 ## Authentication
 
@@ -63,6 +53,8 @@ All project commands accept **name or ID**. Names are matched case-insensitively
 
 **Project URL rule for agents:** confirm the real website URL before creating or updating a project. Never use `localhost`, `127.0.0.1`, `0.0.0.0`, `::1`, or a local dev server URL unless the user explicitly says the project is only for local testing. If the repo only exposes a local URL, ask for the production, staging, preview, or intended public URL. Do not guess a public domain from package names, git remotes, or environment variables. For an explicitly local-only test project, pass `--allow-local-url`.
 
+**Capture-mode decision:** if the user asks for feedback, a feedback bubble, bug reports, or feature requests, use `--capture-mode feedback`. If they ask for a waitlist, launch list, early access, or email capture, use `--capture-mode waitlist`. If they ask to set up FeedbackBasket without choosing, explain both options and ask which they want. Do not switch an existing project without confirmation because only one capture mode is active at a time.
+
 ### Feedback
 ```bash
 # Read
@@ -104,6 +96,8 @@ feedbackbasket widget script <project>
 
 # View settings
 feedbackbasket widget settings <project>
+feedbackbasket widget settings <project> --capture-mode waitlist
+feedbackbasket widget settings <project> --capture-mode feedback
 
 # Customize
 feedbackbasket widget settings <project> --color "#22c55e" --label "Send Feedback"
@@ -111,6 +105,7 @@ feedbackbasket widget settings <project> --position bottom-left --display modal
 feedbackbasket widget settings <project> --email-required --intro "How can we improve?"
 feedbackbasket widget settings <project> --show-email --allow-attachments
 feedbackbasket widget settings <project> --email-read-only --hide-email-when-prefilled
+feedbackbasket widget settings <project> --error-tracking --allow-console-errors
 
 # Guided feedback types and follow-up questions
 feedbackbasket widget flow <project>
@@ -118,6 +113,29 @@ feedbackbasket widget flow <project> --enable  # only when the user chooses guid
 feedbackbasket widget flow <project> --reset-default --enable  # only when the user chooses guided feedback
 feedbackbasket widget flow <project> --config ./feedback-flow.json
 ```
+
+Waitlist mode keeps the same project script and binds to the host app's own annotated form:
+
+```html
+<form data-feedbackbasket-waitlist>
+  <input name="name" autocomplete="name">
+  <input name="email" type="email" autocomplete="email" required>
+  <button type="submit">Join the waitlist</button>
+</form>
+```
+
+Email is required and name is optional. Use `data-feedbackbasket-state="loading|success|error"` for custom UI, or listen for the bubbling `feedbackbasket:waitlist:success` and `feedbackbasket:waitlist:error` events. Do not add a competing submit handler.
+
+### Waitlist Signups
+
+```bash
+feedbackbasket waitlist list <project>
+feedbackbasket waitlist list <project> --search "@example.com" --limit 50 --offset 0
+feedbackbasket waitlist list <project> --agent
+feedbackbasket waitlist export <project>
+```
+
+Agent output includes signup emails, optional names, captured/referrer pages, total counts, active capture mode, and pagination. Use `waitlist export` for the same CSV export available in the dashboard.
 
 For inline trigger mode, load the widget once and call the public API from the host app's custom button:
 
@@ -170,6 +188,8 @@ feedbackbasket projects create "My App" --url https://myapp.com --agent
 feedbackbasket widget script "My App" --agent
 # Agent gets the embed code, adds it to the HTML
 feedbackbasket widget settings "My App" --color "#22c55e" --label "Feedback" --agent
+# Optional, when the user wants a waitlist instead of feedback capture
+# feedbackbasket widget settings "My App" --capture-mode waitlist --agent
 # Optional, only when requested: enable the guided wizard with Bug, Feature, and General templates
 # feedbackbasket widget flow "My App" --reset-default --enable --agent
 ```

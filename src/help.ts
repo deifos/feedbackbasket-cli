@@ -23,7 +23,7 @@ export function renderRootHelp(): string {
   lines.push(`  ${logo()} CLI ${brand.muted(`v${VERSION}`)}`);
   lines.push('');
   lines.push(`  ${brand.muted('The command-line interface for FeedbackBasket.')}`);
-  lines.push(`  ${brand.muted('Manage projects, feedback, widgets, and team from your terminal.')}`);
+  lines.push(`  ${brand.muted('Manage projects, feedback, waitlists, widgets, and team from your terminal.')}`);
   lines.push('');
 
   // Core Commands
@@ -32,6 +32,7 @@ export function renderRootHelp(): string {
   lines.push(cmd('feedback', 'View and manage feedback'));
   lines.push(cmd('bugs', 'View bug reports with severity'));
   lines.push(cmd('widget', 'Manage feedback widget & get embed code'));
+  lines.push(cmd('waitlist', 'View and export waitlist signups'));
   lines.push(cmd('team', 'Manage organization members'));
   lines.push('');
 
@@ -45,6 +46,7 @@ export function renderRootHelp(): string {
   lines.push(section('  SEARCH & EXPORT'));
   lines.push(cmd('feedback search', 'Search feedback across projects'));
   lines.push(cmd('feedback export', 'Export feedback to CSV, Markdown, or JSON'));
+  lines.push(cmd('waitlist export', 'Export waitlist signups to CSV'));
   lines.push(cmd('bugs stats', 'Bug statistics summary'));
   lines.push('');
 
@@ -74,6 +76,8 @@ export function renderRootHelp(): string {
   lines.push(`${INDENT}${brand.muted('$')} feedbackbasket bugs list --severity high`);
   lines.push(`${INDENT}${brand.muted('$')} feedbackbasket widget script myapp`);
   lines.push(`${INDENT}${brand.muted('$')} feedbackbasket widget settings myapp --display modal`);
+  lines.push(`${INDENT}${brand.muted('$')} feedbackbasket widget settings myapp --capture-mode waitlist`);
+  lines.push(`${INDENT}${brand.muted('$')} feedbackbasket waitlist list myapp --search "@example.com"`);
   lines.push(`${INDENT}${brand.muted('$')} feedbackbasket projects create "My App" --url https://myapp.com`);
   lines.push('');
 
