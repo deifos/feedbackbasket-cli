@@ -4,6 +4,24 @@
 
 ---
 
+## [0.11.0] - 2026-07-13
+
+### Added
+
+- **Autonomous mobile setup** - `mobile setup`, `status`, `bundle-ids`, and `verify` let agents configure and confirm native or hosted mobile feedback without using the dashboard
+- **Safe mobile lifecycle controls** - mobile integrations can be disabled or have their publishable project key rotated through explicit confirmation commands
+- **Mobile setup guidance** - agent output includes Swift package details, hosted-form configuration, supported frameworks, and connection metadata
+- **Native in-app replies** - the CLI recognizes mobile reply threads and supports `--delivery in-app` for responses displayed by the Swift SDK
+
+### Changed
+
+- **Publishable key safety** - mobile project keys are masked by default and are returned only when `--include-publishable-key` is explicitly supplied
+- **Safe mobile breadcrumbs** - generated follow-up commands fall back to resolved project IDs when a typed project reference contains shell-active characters
+- **Agent skill coverage** - the packaged skill now detects mobile frameworks, performs CLI-backed setup, protects private CLI/API credentials, and verifies SDK heartbeats
+- **Reply-channel guidance** - feedback details distinguish native in-app replies from website-widget replies so agents choose the correct delivery method
+
+---
+
 ## [0.10.0] - 2026-07-10
 
 ### Added

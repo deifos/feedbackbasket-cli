@@ -4,7 +4,7 @@ export type FeedbackStatus = 'OPEN' | 'UNDER_REVIEW' | 'PLANNED' | 'IN_PROGRESS'
 export type FeedbackCategory = 'BUG' | 'FEATURE_REQUEST' | 'IMPROVEMENT' | 'QUESTION';
 export type Sentiment = 'POSITIVE' | 'NEGATIVE' | 'NEUTRAL';
 export type Severity = 'high' | 'medium' | 'low';
-export type ReplyDelivery = 'email' | 'widget' | 'both';
+export type ReplyDelivery = 'email' | 'widget' | 'in-app' | 'both';
 export type FeedbackFlowQuestionType = 'text' | 'textarea' | 'single_choice';
 
 export interface FeedbackFlowQuestion {
@@ -68,6 +68,33 @@ export interface Project {
   byCategory: Record<string, number>;
 }
 
+export interface MobileIntegrationResponse {
+  project: {
+    id: string;
+    name: string;
+    url: string;
+  };
+  integration: {
+    enabled: boolean;
+    publishableKey: string;
+    publishableKeyIncluded: boolean;
+    hostedFormUrl: string | null;
+    bundleIds: string[];
+    connection: {
+      connected: boolean;
+      lastSeenAt: string | null;
+      platform: string | null;
+      sdkVersion: string | null;
+      bundleId: string | null;
+    };
+  } | null;
+  sdk: {
+    swiftPackageUrl: string;
+    minimumIOSVersion: string;
+    productionBaseUrl: string;
+  };
+}
+
 export interface Feedback {
   id: string;
   content: string;
@@ -97,6 +124,7 @@ export interface Feedback {
   device?: string | null;
   language?: string | null;
   hasWidgetAccess?: boolean;
+  replyChannel?: 'widget' | 'in_app' | null;
   attachments?: FeedbackAttachment[];
   project: {
     id: string;

@@ -14,6 +14,7 @@ import type {
   Feedback,
   WidgetSettings,
   WaitlistResponse,
+  MobileIntegrationResponse,
 } from './types.js';
 
 export class FeedbackBasketClient {
@@ -87,6 +88,26 @@ export class FeedbackBasketClient {
 
   async getWidgetScript(projectId: string): Promise<{ projectId: string; projectName: string; captureMode: 'feedback' | 'waitlist'; embedCode: string; scriptUrl: string }> {
     return this.request('GET', `/projects/${encodeURIComponent(projectId)}/widget-script`);
+  }
+
+  // Mobile feedback
+  async getMobileIntegration(projectId: string, includePublishableKey = false): Promise<MobileIntegrationResponse> {
+    const query = includePublishableKey ? '?includePublishableKey=true' : '';
+    return this.request('GET', `/projects/${encodeURIComponent(projectId)}/mobile${query}`);
+  }
+
+  async updateMobileIntegration(
+    projectId: string,
+    data: { enabled?: boolean; addBundleIds?: string[]; removeBundleIds?: string[] },
+    includePublishableKey = false,
+  ): Promise<MobileIntegrationResponse> {
+    const query = includePublishableKey ? '?includePublishableKey=true' : '';
+    return this.request('PATCH', `/projects/${encodeURIComponent(projectId)}/mobile${query}`, data);
+  }
+
+  async rotateMobileProjectKey(projectId: string, includePublishableKey = false): Promise<MobileIntegrationResponse> {
+    const query = includePublishableKey ? '?includePublishableKey=true' : '';
+    return this.request('POST', `/projects/${encodeURIComponent(projectId)}/mobile/rotate-key${query}`);
   }
 
   async getWaitlist(projectId: string, params: { search?: string; limit?: number; offset?: number } = {}): Promise<WaitlistResponse> {

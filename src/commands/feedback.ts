@@ -207,7 +207,7 @@ function renderFeedbackDetail(item: Feedback): void {
     ['OS', item.os],
     ['Device', item.device],
     ['Language', item.language],
-    ['Widget Thread', item.hasWidgetAccess ? 'Yes' : null],
+    ['Reply Channel', item.replyChannel === 'in_app' ? 'In-app' : item.hasWidgetAccess ? 'Widget' : null],
     ['Created', item.createdAt],
   ];
 

@@ -39,6 +39,7 @@ feedbackbasket feedback list --category BUG --agent
 feedbackbasket feedback create "Login button is broken" --content "Clicking Log in does nothing in Safari." --project myapp --type bug --agent
 feedbackbasket feedback update <id> --status PLANNED --agent
 feedbackbasket widget script myproject --agent
+feedbackbasket mobile setup myproject --bundle-id com.example.app --include-publishable-key --agent
 ```
 
 When installing or configuring a widget for the current app, agents should not rely on the CLI default project. First run `feedbackbasket projects list --agent`, match the current app by its real website URL or clearly matching project name, and only create a new project after confirming no existing project belongs to this app. If the only known URL is `localhost`, ask for the production, staging, preview, or intended public URL before creating the project.
@@ -100,6 +101,7 @@ feedbackbasket feedback update <id> --status PLANNED       # Update status
 feedbackbasket feedback update <id> --category BUG         # Update category
 feedbackbasket feedback reply <id> "Thanks!" --delivery email --reply-to support@example.com
 feedbackbasket feedback reply <id> "Thanks!" --delivery widget
+feedbackbasket feedback reply <id> "Thanks!" --delivery in-app
 feedbackbasket feedback reply <id> "Thanks!" --delivery both --reply-to support@example.com
 feedbackbasket feedback replies <id>                       # List sent replies
 feedbackbasket feedback note <id> "Investigating this..."  # Add internal note
@@ -201,6 +203,34 @@ The default widget experience is a basic modal. Only switch to popup mode or ena
   ]
 }
 ```
+
+### Mobile Apps
+
+Mobile setup is additive and does not change the website widget. The `fb_mobile_` value is a publishable, write-only project identifier designed to ship in an app; it is not a CLI token or private API key. Mobile commands mask it unless `--include-publishable-key` is explicitly supplied.
+
+```bash
+# Enable mobile feedback and add allowed iOS bundle IDs
+feedbackbasket mobile setup myapp --bundle-id com.example.app
+
+# Return the publishable key and hosted form URL for an authorized app setup
+feedbackbasket mobile setup myapp --bundle-id com.example.app --include-publishable-key --agent
+
+# Inspect and verify the SDK heartbeat
+feedbackbasket mobile status myapp
+feedbackbasket mobile verify myapp --bundle-id com.example.app --wait 120
+
+# Add or remove bundle IDs without replacing the others
+feedbackbasket mobile bundle-ids myapp --add com.example.app.beta
+feedbackbasket mobile bundle-ids myapp --remove com.example.app.beta
+
+# Actions that can interrupt installed apps require explicit confirmation
+feedbackbasket mobile disable myapp --yes
+feedbackbasket mobile rotate-key myapp --yes --include-publishable-key
+```
+
+Agents should never repeat the full publishable key in their final response. They must never place `fb_cli_` or `fb_key_` credentials in a mobile app. Key rotation invalidates the previous key and therefore requires explicit user authorization.
+
+The native Swift SDK securely stores reply-thread credentials in the app Keychain and shows team replies in the same feedback sheet. Host apps do not need to build an inbox or manage reply tokens. Hosted-form integrations remain email-only.
 
 ### Team
 

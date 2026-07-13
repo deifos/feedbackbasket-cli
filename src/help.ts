@@ -23,7 +23,7 @@ export function renderRootHelp(): string {
   lines.push(`  ${logo()} CLI ${brand.muted(`v${VERSION}`)}`);
   lines.push('');
   lines.push(`  ${brand.muted('The command-line interface for FeedbackBasket.')}`);
-  lines.push(`  ${brand.muted('Manage projects, feedback, waitlists, widgets, and team from your terminal.')}`);
+  lines.push(`  ${brand.muted('Manage projects, feedback, mobile apps, waitlists, widgets, and team from your terminal.')}`);
   lines.push('');
 
   // Core Commands
@@ -33,6 +33,7 @@ export function renderRootHelp(): string {
   lines.push(cmd('bugs', 'View bug reports with severity'));
   lines.push(cmd('widget', 'Manage feedback widget & get embed code'));
   lines.push(cmd('waitlist', 'View and export waitlist signups'));
+  lines.push(cmd('mobile', 'Set up and verify mobile app feedback'));
   lines.push(cmd('team', 'Manage organization members'));
   lines.push('');
 
@@ -78,6 +79,8 @@ export function renderRootHelp(): string {
   lines.push(`${INDENT}${brand.muted('$')} feedbackbasket widget settings myapp --display modal`);
   lines.push(`${INDENT}${brand.muted('$')} feedbackbasket widget settings myapp --capture-mode waitlist`);
   lines.push(`${INDENT}${brand.muted('$')} feedbackbasket waitlist list myapp --search "@example.com"`);
+  lines.push(`${INDENT}${brand.muted('$')} feedbackbasket mobile setup myapp --bundle-id com.example.app`);
+  lines.push(`${INDENT}${brand.muted('$')} feedbackbasket mobile verify myapp --bundle-id com.example.app --wait 120`);
   lines.push(`${INDENT}${brand.muted('$')} feedbackbasket projects create "My App" --url https://myapp.com`);
   lines.push('');
 

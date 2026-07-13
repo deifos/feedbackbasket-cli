@@ -12,6 +12,7 @@ import { createSetupCommand } from './commands/setup.js';
 import { createWidgetCommand } from './commands/widget.js';
 import { createTeamCommand } from './commands/team.js';
 import { createWaitlistCommand } from './commands/waitlist.js';
+import { createMobileCommand } from './commands/mobile.js';
 import { renderRootHelp } from './help.js';
 
 let writer: OutputWriter;
@@ -67,6 +68,7 @@ export function run(): void {
   program.addCommand(createBugsCommand(getWriter));
   program.addCommand(createWidgetCommand(getWriter));
   program.addCommand(createWaitlistCommand(getWriter));
+  program.addCommand(createMobileCommand(getWriter));
   program.addCommand(createTeamCommand(getWriter));
   program.addCommand(createDoctorCommand(getWriter));
   program.addCommand(createSetupCommand(getWriter));

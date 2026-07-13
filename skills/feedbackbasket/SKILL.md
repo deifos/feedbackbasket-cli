@@ -1,6 +1,6 @@
 ---
 name: feedbackbasket
-description: Manage FeedbackBasket projects, feedback, bugs, feedback widgets, waitlist capture, and teams from the command line. Use when an agent needs to configure FeedbackBasket, collect feedback or waitlist signups, query feedback, or manage a FeedbackBasket project.
+description: Manage FeedbackBasket projects, feedback, bugs, website widgets, mobile app feedback, waitlist capture, and teams from the command line. Use whenever an agent needs to configure FeedbackBasket in a web or mobile app, install its Swift SDK or hosted mobile form, collect feedback or waitlist signups, query feedback, or manage a FeedbackBasket project.
 ---
 
 # FeedbackBasket CLI
@@ -55,6 +55,59 @@ All project commands accept **name or ID**. Names are matched case-insensitively
 
 **Capture-mode decision:** if the user asks for feedback, a feedback bubble, bug reports, or feature requests, use `--capture-mode feedback`. If they ask for a waitlist, launch list, early access, or email capture, use `--capture-mode waitlist`. If they ask to set up FeedbackBasket without choosing, explain both options and ask which they want. Do not switch an existing project without confirmation because only one capture mode is active at a time.
 
+**Mobile project selection rule:** resolve the FeedbackBasket project for the current app before running mobile commands. Prefer a clearly matching existing project name or product URL. If multiple projects are plausible, ask the user. If none exists, confirm a real product, support, marketing, or App Store URL before creating one; do not invent a URL or use a local development address.
+
+### Mobile App Feedback
+
+```bash
+feedbackbasket mobile status <project> --agent
+feedbackbasket mobile setup <project> --bundle-id com.example.app --agent
+feedbackbasket mobile setup <project> --bundle-id com.example.app --include-publishable-key --agent
+feedbackbasket mobile bundle-ids <project> --add com.example.app.beta --agent
+feedbackbasket mobile bundle-ids <project> --remove com.example.app.beta --agent
+feedbackbasket mobile verify <project> --bundle-id com.example.app --wait 120 --agent
+feedbackbasket mobile disable <project> --yes --agent
+feedbackbasket mobile rotate-key <project> --yes --include-publishable-key --agent
+```
+
+The `fb_mobile_` project key is a publishable, write-only identifier designed to ship in the app. It cannot read feedback or administer the project. It is still masked by default to reduce accidental disclosure in logs and transcripts. Use `--include-publishable-key` only while performing a mobile setup the user authorized, and never repeat the full value in the final response.
+
+Never put an `fb_cli_` CLI token or `fb_key_` MCP/API key in application source, build settings, prompts, logs, or generated configuration. Those are private credentials and are not interchangeable with the publishable mobile key.
+
+For SwiftUI apps targeting iOS 16 or later, use the Swift package returned by `mobile setup` and its native feedback sheet. For UIKit, use the package API or host the SwiftUI sheet. For React Native, Flutter, or unsupported stacks, use the returned hosted form URL in the app's existing in-app browser when available.
+
+Configure the Swift package once at app startup with the returned publishable key:
+
+```swift
+import FeedbackBasket
+
+FeedbackBasket.configure(
+    projectKey: "fb_mobile_returned_by_mobile_setup"
+)
+```
+
+Present its standard SwiftUI sheet from the selected Settings, Help, or Support view:
+
+```swift
+@State private var showingFeedback = false
+
+Button("Send feedback") {
+    showingFeedback = true
+}
+.feedbackBasketSheet(
+    isPresented: $showingFeedback,
+    context: ["screen": "Settings"]
+)
+```
+
+The native SDK stores each submission's reply-thread credential in the app Keychain and shows team replies in the same feedback sheet when it is opened again. Do not build a separate inbox, polling client, or token store in the host app. Hosted-form integrations remain email-only.
+
+Add an accessible Send feedback action to an appropriate existing Settings, Help, or Support screen. Attach only useful non-sensitive context. Do not send passwords, authentication tokens, payment information, private form contents, crash reports, analytics, session recordings, or automatic logs.
+
+Treat a supplied project key as production unless the user explicitly confirms a staging key and base URL. Build and launch the app so the SDK can send its heartbeat, then use `mobile verify`; do not submit test feedback to production. A prior matching heartbeat is a valid connection result because the SDK throttles successful heartbeat attempts.
+
+`mobile setup` is idempotent and adds bundle IDs without replacing existing entries. Do not rotate a key or disable mobile feedback unless the user explicitly requested that disruptive action. Rotation stops every released app using the previous key.
+
 ### Feedback
 ```bash
 # Read
@@ -71,9 +124,10 @@ feedbackbasket feedback note <id> "Investigating — appears related to auth flo
 feedbackbasket feedback delete <id> --yes
 feedbackbasket feedback bulk-update --status CLOSED --ids id1,id2,id3
 
-# Reply to submitter by email, widget thread, or both
+# Reply to submitter by email, widget/in-app thread, or both
 feedbackbasket feedback reply <id> "Thanks for reporting — we pushed a fix!" --delivery email --reply-to support@example.com
 feedbackbasket feedback reply <id> "<content>" --delivery widget
+feedbackbasket feedback reply <id> "<content>" --delivery in-app
 feedbackbasket feedback reply <id> "<content>" --delivery both --reply-to support@example.com
 feedbackbasket feedback replies <id>                                          # list past replies
 
@@ -257,17 +311,18 @@ feedbackbasket feedback show <id> --agent
 ### Close the loop — reply to the submitter
 ```bash
 # Agent reads context, asks which delivery method to use, then sends it
-feedbackbasket feedback show <id> --agent                    # read email, hasWidgetAccess, project.replyToEmail
+feedbackbasket feedback show <id> --agent                    # read email, replyChannel, project.replyToEmail
 feedbackbasket feedback reply <id> "<drafted response>" --delivery widget --agent
+feedbackbasket feedback reply <id> "<drafted response>" --delivery in-app --agent
 feedbackbasket feedback reply <id> "<drafted response>" --delivery email --reply-to support@example.com --agent
 feedbackbasket feedback reply <id> "<drafted response>" --delivery both --reply-to support@example.com --agent
 feedbackbasket feedback update <id> --status COMPLETE --agent
 feedbackbasket feedback note <id> "Replied via CLI" --agent
 ```
 **Important reply safety rules:**
-- Before replying, the agent MUST inspect `feedback show --agent`, then ask the human which delivery method to use: `email`, `widget`, or `both`, unless the human already specified it in the current conversation.
-- If `feedback show` returns `email: null`, do not use `--delivery email` or `--delivery both`. If `hasWidgetAccess: true`, use `--delivery widget`; otherwise ask the human how they want to respond.
-- If `hasWidgetAccess: false`, do not use `--delivery widget` or `--delivery both`.
+- Before replying, the agent MUST inspect `feedback show --agent`, including `replyChannel`, then ask the human which available delivery method to use unless the human already specified it in the current conversation.
+- If `replyChannel: "in_app"`, use `--delivery in-app`. If `replyChannel: "widget"`, use `--delivery widget`. Use `--delivery both` only when an email address and a reply channel are both available.
+- If `feedback show` returns `email: null`, do not use `--delivery email` or `--delivery both`. If `replyChannel: null`, do not use thread delivery.
 - If the delivery includes email and `project.replyToEmail: null`, the agent MUST ask the human which reply-to email to use before sending. Do not use the account owner's email, token owner's email, or any remembered address without explicit confirmation in the current conversation.
 - After the human confirms a reply-to address, pass it explicitly with `--reply-to <email>`, or set a project default first with `feedbackbasket projects update <project> --reply-to <email>`.
 

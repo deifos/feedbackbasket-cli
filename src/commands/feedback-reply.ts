@@ -8,15 +8,15 @@ import { ask } from '../prompt.js';
 import type { OutputWriter } from '../output/writer.js';
 import type { ReplyDelivery } from '../types.js';
 
-const deliveryOptions = new Set(['email', 'widget', 'both']);
+const deliveryOptions = new Set(['email', 'widget', 'in-app', 'both']);
 
 export function createFeedbackReplyCommand(getWriter: () => OutputWriter): Command {
   return new Command('reply')
     .argument('<id>', 'Feedback ID to reply to')
     .argument('[content]', 'Reply content (or use --content)')
-    .description('Reply to feedback by email, widget thread, or both')
+    .description('Reply to feedback by email, widget/in-app thread, or both')
     .option('--content <text>', 'Reply content (alternative to positional argument)')
-    .option('--delivery <delivery>', 'Reply delivery (email, widget, both)', 'email')
+    .option('--delivery <delivery>', 'Reply delivery (email, widget, in-app, both)', 'email')
     .option('--reply-to <email>', 'Reply-to email for email delivery')
     .action(async (id, contentArg, opts) => {
       const writer = getWriter();
@@ -31,16 +31,20 @@ export function createFeedbackReplyCommand(getWriter: () => OutputWriter): Comma
       }
       if (!deliveryOptions.has(delivery)) {
         throw errUsage(
-          'Delivery must be email, widget, or both',
+          'Delivery must be email, widget, in-app, or both',
           'Example: feedbackbasket feedback reply <id> "Thanks!" --delivery both --reply-to support@example.com',
         );
       }
 
       const client = requireClient();
       const feedback = await client.getFeedbackById(id);
-      const destinations = delivery === 'both'
-        ? ['email', 'widget'] as Array<'email' | 'widget'>
-        : [delivery] as Array<'email' | 'widget'>;
+      if (delivery === 'in-app' && feedback.replyChannel !== 'in_app') {
+        throw errUsage(
+          'This feedback does not have an in-app reply thread.',
+          'Use --delivery widget for website-widget feedback or --delivery email when an email address is available.',
+        );
+      }
+      const destinations = replyDestinations(delivery);
       const sendsEmail = destinations.includes('email');
       const sendsWidget = destinations.includes('widget');
       let replyTo: string | undefined = opts.replyTo ?? feedback.project.replyToEmail ?? undefined;
@@ -48,7 +52,9 @@ export function createFeedbackReplyCommand(getWriter: () => OutputWriter): Comma
       if (sendsEmail) {
         if (!feedback.email) {
           throw errUsage(
-            'This feedback has no email address; use --delivery widget if it has a widget thread.',
+            feedback.replyChannel === 'in_app'
+              ? 'This feedback has no email address; use --delivery in-app.'
+              : 'This feedback has no email address; use --delivery widget if it has a widget thread.',
           );
         }
 
@@ -81,7 +87,7 @@ export function createFeedbackReplyCommand(getWriter: () => OutputWriter): Comma
 
       if (sendsWidget && !feedback.hasWidgetAccess) {
         throw errUsage(
-          'This feedback is not connected to a widget thread.',
+          'This feedback has no in-app or widget reply thread.',
           'Use --delivery email for feedback with an email address, or ask the human how they want to respond.',
         );
       }
@@ -100,7 +106,7 @@ export function createFeedbackReplyCommand(getWriter: () => OutputWriter): Comma
           }
         }
         if (result.message) {
-          console.log(`  ${brand.success('[OK]')} Widget reply posted`);
+          console.log(`  ${brand.success('[OK]')} ${feedback.replyChannel === 'in_app' ? 'In-app' : 'Widget'} reply posted`);
           console.log(`    ${brand.muted('By:')}   ${result.message.sentByName ?? 'CLI'}`);
         }
         console.log();
@@ -108,9 +114,9 @@ export function createFeedbackReplyCommand(getWriter: () => OutputWriter): Comma
 
       writer.ok(result, {
         summary: delivery === 'both'
-          ? 'Reply sent by email and widget'
-          : delivery === 'widget'
-            ? 'Widget reply posted'
+          ? `Reply sent by email and ${feedback.replyChannel === 'in_app' ? 'in-app' : 'widget'}`
+          : sendsWidget
+            ? `${feedback.replyChannel === 'in_app' ? 'In-app' : 'Widget'} reply posted`
             : `Reply sent to ${result.sentTo}`,
         breadcrumbs: [
           { action: 'View replies', cmd: `feedbackbasket feedback replies ${id}` },
@@ -171,6 +177,14 @@ export function createFeedbackRepliesCommand(getWriter: () => OutputWriter): Com
         ],
       });
     });
+}
+
+export function replyDestinations(
+  delivery: ReplyDelivery,
+): Array<'email' | 'widget'> {
+  if (delivery === 'both') return ['email', 'widget'];
+  if (delivery === 'in-app') return ['widget'];
+  return [delivery];
 }
 
 function requireClient(): FeedbackBasketClient {
