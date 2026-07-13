@@ -4,6 +4,20 @@
 
 ---
 
+## [0.12.0] - 2026-07-13
+
+### Added
+
+- **Conversation controls** - enable or disable website visitor replies and native in-app follow-up replies independently from the CLI
+- **Threaded conversation output** - `feedback replies` now shows both team messages and visitor follow-ups in chronological order
+
+### Changed
+
+- **Mobile conversation guidance** - mobile status, breadcrumbs, README, and the packaged skill now cover SDK unread badges and same-thread replies
+- **Agent thread safety** - agents preserve follow-up context on the original feedback item instead of creating duplicate feedback entries
+
+---
+
 ## [0.11.0] - 2026-07-13
 
 ### Added

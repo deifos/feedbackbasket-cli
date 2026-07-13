@@ -65,6 +65,8 @@ feedbackbasket mobile setup <project> --bundle-id com.example.app --agent
 feedbackbasket mobile setup <project> --bundle-id com.example.app --include-publishable-key --agent
 feedbackbasket mobile bundle-ids <project> --add com.example.app.beta --agent
 feedbackbasket mobile bundle-ids <project> --remove com.example.app.beta --agent
+feedbackbasket mobile conversations <project> --enable --agent
+feedbackbasket mobile conversations <project> --disable --agent
 feedbackbasket mobile verify <project> --bundle-id com.example.app --wait 120 --agent
 feedbackbasket mobile disable <project> --yes --agent
 feedbackbasket mobile rotate-key <project> --yes --include-publishable-key --agent
@@ -100,7 +102,7 @@ Button("Send feedback") {
 )
 ```
 
-The native SDK stores each submission's reply-thread credential in the app Keychain and shows team replies in the same feedback sheet when it is opened again. Do not build a separate inbox, polling client, or token store in the host app. Hosted-form integrations remain email-only.
+Use FeedbackBasket Swift SDK 0.3.0 or later. The SDK stores each submission's conversation credential in the app Keychain, shows an unread badge when the team replies, and keeps team and user messages in one thread. When mobile conversations are enabled, users answer inside that thread; never create a new feedback submission for a follow-up. Reply state refreshes when the SDK is configured, when the app enters the foreground, and when the sheet opens. This is not an APNs push notification while the app is closed. Do not build a separate inbox, polling client, or token store in the host app. Hosted-form integrations remain email-only.
 
 Add an accessible Send feedback action to an appropriate existing Settings, Help, or Support screen. Attach only useful non-sensitive context. Do not send passwords, authentication tokens, payment information, private form contents, crash reports, analytics, session recordings, or automatic logs.
 
@@ -129,7 +131,7 @@ feedbackbasket feedback reply <id> "Thanks for reporting — we pushed a fix!" -
 feedbackbasket feedback reply <id> "<content>" --delivery widget
 feedbackbasket feedback reply <id> "<content>" --delivery in-app
 feedbackbasket feedback reply <id> "<content>" --delivery both --reply-to support@example.com
-feedbackbasket feedback replies <id>                                          # list past replies
+feedbackbasket feedback replies <id>                                          # show the complete conversation
 
 # Export
 feedbackbasket feedback export <project> --format csv
@@ -158,6 +160,8 @@ feedbackbasket widget settings <project> --color "#22c55e" --label "Send Feedbac
 feedbackbasket widget settings <project> --position bottom-left --display modal
 feedbackbasket widget settings <project> --email-required --intro "How can we improve?"
 feedbackbasket widget settings <project> --show-email --allow-attachments
+feedbackbasket widget settings <project> --allow-visitor-replies
+feedbackbasket widget settings <project> --no-allow-visitor-replies
 feedbackbasket widget settings <project> --email-read-only --hide-email-when-prefilled
 feedbackbasket widget settings <project> --error-tracking --allow-console-errors
 
@@ -320,11 +324,12 @@ feedbackbasket feedback update <id> --status COMPLETE --agent
 feedbackbasket feedback note <id> "Replied via CLI" --agent
 ```
 **Important reply safety rules:**
-- Before replying, the agent MUST inspect `feedback show --agent`, including `replyChannel`, then ask the human which available delivery method to use unless the human already specified it in the current conversation.
+- Before replying, the agent MUST inspect `feedback show --agent`, including `replyChannel` and `awaitingOwnerReply`, then ask the human which available delivery method to use unless the human already specified it in the current conversation.
 - If `replyChannel: "in_app"`, use `--delivery in-app`. If `replyChannel: "widget"`, use `--delivery widget`. Use `--delivery both` only when an email address and a reply channel are both available.
 - If `feedback show` returns `email: null`, do not use `--delivery email` or `--delivery both`. If `replyChannel: null`, do not use thread delivery.
 - If the delivery includes email and `project.replyToEmail: null`, the agent MUST ask the human which reply-to email to use before sending. Do not use the account owner's email, token owner's email, or any remembered address without explicit confirmation in the current conversation.
 - After the human confirms a reply-to address, pass it explicitly with `--reply-to <email>`, or set a project default first with `feedbackbasket projects update <project> --reply-to <email>`.
+- Treat `feedback replies <id>` as one chronological conversation containing both team and visitor messages. A visitor follow-up belongs to the original feedback item; never create a replacement feedback item for it.
 
 Never silently guess a reply-to address. It becomes the "From" address the customer sees.
 

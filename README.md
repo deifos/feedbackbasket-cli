@@ -103,7 +103,7 @@ feedbackbasket feedback reply <id> "Thanks!" --delivery email --reply-to support
 feedbackbasket feedback reply <id> "Thanks!" --delivery widget
 feedbackbasket feedback reply <id> "Thanks!" --delivery in-app
 feedbackbasket feedback reply <id> "Thanks!" --delivery both --reply-to support@example.com
-feedbackbasket feedback replies <id>                       # List sent replies
+feedbackbasket feedback replies <id>                       # Show the complete conversation
 feedbackbasket feedback note <id> "Investigating this..."  # Add internal note
 feedbackbasket feedback delete <id>                        # Delete feedback
 feedbackbasket feedback bulk-update --status CLOSED --ids id1,id2,id3
@@ -138,6 +138,8 @@ feedbackbasket widget settings myapp --position bottom-left --display modal
 feedbackbasket widget settings myapp --email-required --intro "How can we improve?"
 feedbackbasket widget settings myapp --button-radius 10 --button-size regular
 feedbackbasket widget settings myapp --show-email --allow-attachments
+feedbackbasket widget settings myapp --allow-visitor-replies
+feedbackbasket widget settings myapp --no-allow-visitor-replies
 feedbackbasket widget settings myapp --email-read-only --hide-email-when-prefilled
 feedbackbasket widget settings myapp --error-tracking --allow-console-errors
 
@@ -219,6 +221,10 @@ feedbackbasket mobile setup myapp --bundle-id com.example.app --include-publisha
 feedbackbasket mobile status myapp
 feedbackbasket mobile verify myapp --bundle-id com.example.app --wait 120
 
+# Let users answer team replies in the original in-app conversation
+feedbackbasket mobile conversations myapp --enable
+feedbackbasket mobile conversations myapp --disable
+
 # Add or remove bundle IDs without replacing the others
 feedbackbasket mobile bundle-ids myapp --add com.example.app.beta
 feedbackbasket mobile bundle-ids myapp --remove com.example.app.beta
@@ -230,7 +236,7 @@ feedbackbasket mobile rotate-key myapp --yes --include-publishable-key
 
 Agents should never repeat the full publishable key in their final response. They must never place `fb_cli_` or `fb_key_` credentials in a mobile app. Key rotation invalidates the previous key and therefore requires explicit user authorization.
 
-The native Swift SDK securely stores reply-thread credentials in the app Keychain and shows team replies in the same feedback sheet. Host apps do not need to build an inbox or manage reply tokens. Hosted-form integrations remain email-only.
+The native Swift SDK securely stores conversation credentials in the app Keychain, shows an unread badge when the team replies, and lets users answer inside the same thread when mobile conversations are enabled. Host apps do not need to build an inbox or manage reply tokens. Hosted-form integrations remain email-only. Website widget follow-up replies are configured independently with `widget settings`.
 
 ### Team
 

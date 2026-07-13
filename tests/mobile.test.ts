@@ -13,6 +13,7 @@ function response(overrides: Partial<MobileIntegrationResponse['integration']> =
     project: { id: 'project-1', name: 'Example', url: 'https://example.com' },
     integration: {
       enabled: true,
+      allowVisitorReplies: true,
       publishableKey: 'fb_mobile_abcd••••••••••••',
       publishableKeyIncluded: false,
       hostedFormUrl: null,
@@ -79,7 +80,7 @@ test('mobile client endpoints include publishable keys only when explicitly requ
     await client.getMobileIntegration('project/one');
     await client.updateMobileIntegration(
       'project/one',
-      { enabled: true, addBundleIds: ['com.example.app'] },
+      { enabled: true, allowVisitorReplies: false, addBundleIds: ['com.example.app'] },
       true,
     );
     await client.rotateMobileProjectKey('project/one', true);
@@ -98,6 +99,7 @@ test('mobile client endpoints include publishable keys only when explicitly requ
   assert.equal(calls[1]?.init?.method, 'PATCH');
   assert.deepEqual(JSON.parse(String(calls[1]?.init?.body)), {
     enabled: true,
+    allowVisitorReplies: false,
     addBundleIds: ['com.example.app'],
   });
   assert.equal(

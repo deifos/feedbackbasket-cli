@@ -48,6 +48,7 @@ export interface WidgetSettings {
   emailReadOnly?: boolean;
   hideEmailFieldWhenPrefilled?: boolean;
   allowAttachments?: boolean;
+  allowVisitorReplies?: boolean;
   displayMode?: 'modal' | 'popup';
   zIndex?: number;
   showBranding?: boolean;
@@ -76,6 +77,7 @@ export interface MobileIntegrationResponse {
   };
   integration: {
     enabled: boolean;
+    allowVisitorReplies: boolean;
     publishableKey: string;
     publishableKeyIncluded: boolean;
     hostedFormUrl: string | null;
@@ -104,6 +106,7 @@ export interface Feedback {
   sentiment?: Sentiment | null;
   aiSummary?: string | null;
   aiPriorityScore?: number | null;
+  awaitingOwnerReply?: boolean;
   reasoning?: string | null;
   feedbackType?: {
     id?: string;
@@ -220,6 +223,7 @@ export interface FeedbackReplyResponse {
   } | null;
   message: {
     id: string;
+    senderType: 'OWNER' | 'VISITOR';
     content: string;
     delivery: 'WIDGET' | 'EMAIL' | 'BOTH';
     sentByName: string | null;

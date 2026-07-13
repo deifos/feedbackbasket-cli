@@ -98,7 +98,7 @@ export class FeedbackBasketClient {
 
   async updateMobileIntegration(
     projectId: string,
-    data: { enabled?: boolean; addBundleIds?: string[]; removeBundleIds?: string[] },
+    data: { enabled?: boolean; allowVisitorReplies?: boolean; addBundleIds?: string[]; removeBundleIds?: string[] },
     includePublishableKey = false,
   ): Promise<MobileIntegrationResponse> {
     const query = includePublishableKey ? '?includePublishableKey=true' : '';

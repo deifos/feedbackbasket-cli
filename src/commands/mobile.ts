@@ -36,6 +36,7 @@ export function createMobileCommand(getWriter: () => OutputWriter): Command {
           ? [
               { action: 'Verify SDK connection', cmd: `feedbackbasket mobile verify ${ref}` },
               { action: 'Add a bundle ID', cmd: `feedbackbasket mobile bundle-ids ${ref} --add com.example.app` },
+              { action: 'Configure conversations', cmd: `feedbackbasket mobile conversations ${ref} --enable` },
             ]
           : [
               { action: 'Enable mobile feedback', cmd: `feedbackbasket mobile setup ${ref}` },
@@ -110,6 +111,34 @@ export function createMobileCommand(getWriter: () => OutputWriter): Command {
       }
       writer.ok(result, {
         summary: `Updated mobile bundle IDs for "${result.project.name}"`,
+        breadcrumbs: [
+          { action: 'View mobile status', cmd: `feedbackbasket mobile status ${projectRef(projectArg, projectId)}` },
+        ],
+      });
+    });
+
+  mobile
+    .command('conversations [project]')
+    .description('Enable or disable in-app follow-up replies')
+    .option('--enable', 'Let users continue feedback conversations in the app')
+    .option('--disable', 'Keep in-app team replies read-only')
+    .action(async (projectArg, opts) => {
+      if (Boolean(opts.enable) === Boolean(opts.disable)) {
+        throw errUsage('Choose either --enable or --disable');
+      }
+
+      const writer = getWriter();
+      const client = requireClient();
+      const projectId = await resolveProjectId(client, projectArg);
+      const allowVisitorReplies = Boolean(opts.enable);
+      const result = await client.updateMobileIntegration(projectId, { allowVisitorReplies });
+
+      if (!writer.isMachineOutput()) {
+        console.log(`  ${brand.success('✓')} In-app conversations ${allowVisitorReplies ? 'enabled' : 'disabled'} for ${brand.bold(result.project.name)}`);
+        console.log();
+      }
+      writer.ok(result, {
+        summary: `${allowVisitorReplies ? 'Enabled' : 'Disabled'} in-app follow-up replies for "${result.project.name}"`,
         breadcrumbs: [
           { action: 'View mobile status', cmd: `feedbackbasket mobile status ${projectRef(projectArg, projectId)}` },
         ],
@@ -321,6 +350,7 @@ function renderMobileStatus(result: MobileIntegrationResponse): void {
   }
   const integration = result.integration;
   console.log(`  ${brand.label('Status'.padEnd(18))} ${integration.enabled ? 'Enabled' : 'Disabled'}`);
+  console.log(`  ${brand.label('Conversations'.padEnd(18))} ${integration.allowVisitorReplies ? 'Enabled' : 'Read-only'}`);
   console.log(`  ${brand.label('Publishable key'.padEnd(18))} ${integration.publishableKey}`);
   console.log(`  ${brand.label('Bundle IDs'.padEnd(18))} ${integration.bundleIds.join(', ') || 'Any bundle ID'}`);
   console.log(`  ${brand.label('Connection'.padEnd(18))} ${integration.connection.connected ? 'Connected' : 'Waiting for first heartbeat'}`);

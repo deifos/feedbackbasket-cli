@@ -208,6 +208,7 @@ function renderFeedbackDetail(item: Feedback): void {
     ['Device', item.device],
     ['Language', item.language],
     ['Reply Channel', item.replyChannel === 'in_app' ? 'In-app' : item.hasWidgetAccess ? 'Widget' : null],
+    ['Conversation', item.awaitingOwnerReply ? 'User replied — team response needed' : null],
     ['Created', item.createdAt],
   ];
 

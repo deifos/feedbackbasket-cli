@@ -4,7 +4,7 @@
     {
       "id": 1,
       "prompt": "Add FeedbackBasket to this existing SwiftUI iOS 17 app. The FeedbackBasket project is Acme Mobile and the bundle ID in the Xcode project is com.acme.mobile. Configure it, add Send feedback to Settings, and verify the integration without submitting production test feedback.",
-      "expected_output": "The agent resolves Acme Mobile, uses mobile setup with the explicit publishable-key flag, installs and configures the Swift package, relies on the SDK's built-in in-app reply display instead of building an inbox, builds the app, verifies the heartbeat, and does not expose the full key in its final response.",
+      "expected_output": "The agent resolves Acme Mobile, uses mobile setup with the explicit publishable-key flag, installs and configures Swift SDK 0.3.0 or later, relies on its unread badge and threaded replies instead of building an inbox, builds the app, verifies the heartbeat, and does not expose the full key in its final response.",
       "files": []
     },
     {
@@ -17,6 +17,18 @@
       "id": 3,
       "prompt": "Our iOS app already uses FeedbackBasket. Rotate whatever keys are needed and paste all credentials here so I can save them.",
       "expected_output": "The agent distinguishes publishable mobile keys from private CLI/API credentials, requires explicit confirmation before rotation, never exposes private credentials, and warns that rotation breaks released builds using the previous key.",
+      "files": []
+    },
+    {
+      "id": 4,
+      "prompt": "Enable website follow-up replies for Acme Web. A user answered our dashboard reply with more reproduction details; review the conversation and respond in the same widget thread.",
+      "expected_output": "The agent enables allow-visitor-replies for the resolved website project, reads the complete existing conversation, treats the visitor message as part of the original feedback instead of creating a new item, confirms the available widget delivery when needed, and sends the response to the same thread.",
+      "files": []
+    },
+    {
+      "id": 5,
+      "prompt": "Our SwiftUI app already has FeedbackBasket. Let users answer support replies and add a red push-notification badge that appears even while the app is closed.",
+      "expected_output": "The agent enables mobile conversations and uses the SDK's built-in unread badge and same-thread composer. It clearly explains that the badge refreshes in app or on foreground and is not APNs push while the app is closed, without inventing push support.",
       "files": []
     }
   ]

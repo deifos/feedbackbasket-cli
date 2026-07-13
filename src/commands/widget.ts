@@ -77,6 +77,8 @@ export function createWidgetCommand(getWriter: () => OutputWriter): Command {
     .option('--no-hide-email-when-prefilled', 'Show the email field even when userEmail is prefilled')
     .option('--allow-attachments', 'Allow image attachments')
     .option('--no-allow-attachments', 'Disable image attachments')
+    .option('--allow-visitor-replies', 'Let visitors continue feedback conversations')
+    .option('--no-allow-visitor-replies', 'Keep widget replies read-only for visitors')
     .option('--icon-only', 'Show only the icon, no label')
     .option('--no-icon-only', 'Show both icon and label')
     .option('--show-icon', 'Show an icon next to the label')
@@ -100,7 +102,7 @@ export function createWidgetCommand(getWriter: () => OutputWriter): Command {
         opts.buttonRadius || opts.buttonSize || opts.icon ||
         opts.emailRequired !== undefined || opts.showEmail !== undefined ||
         opts.emailReadOnly !== undefined || opts.hideEmailWhenPrefilled !== undefined ||
-        opts.allowAttachments !== undefined || opts.iconOnly !== undefined ||
+        opts.allowAttachments !== undefined || opts.allowVisitorReplies !== undefined || opts.iconOnly !== undefined ||
         opts.showIcon !== undefined || opts.showBranding !== undefined ||
         opts.allowConsoleErrors !== undefined || opts.errorTracking !== undefined ||
         opts.zIndex || opts.guided || opts.disableGuided;
@@ -131,6 +133,7 @@ export function createWidgetCommand(getWriter: () => OutputWriter): Command {
         if (opts.emailReadOnly !== undefined) settings.emailReadOnly = opts.emailReadOnly;
         if (opts.hideEmailWhenPrefilled !== undefined) settings.hideEmailFieldWhenPrefilled = opts.hideEmailWhenPrefilled;
         if (opts.allowAttachments !== undefined) settings.allowAttachments = opts.allowAttachments;
+        if (opts.allowVisitorReplies !== undefined) settings.allowVisitorReplies = opts.allowVisitorReplies;
         if (opts.iconOnly !== undefined) settings.iconOnly = opts.iconOnly;
         if (opts.showIcon !== undefined) settings.showIcon = opts.showIcon;
         if (opts.showBranding !== undefined) settings.showBranding = opts.showBranding;
@@ -448,6 +451,7 @@ function renderWidgetSettings(projectName: string, settings: WidgetSettings): vo
     ['Email Read Only', String(settings.emailReadOnly ?? false)],
     ['Hide Prefilled Email', String(settings.hideEmailFieldWhenPrefilled ?? false)],
     ['Attachments', String(settings.allowAttachments ?? true)],
+    ['Follow-up Replies', String(settings.allowVisitorReplies ?? false)],
     ['Guided Flow', String(settings.feedbackFlow?.enabled ?? false)],
     ['Intro Message', String(settings.introMessage ?? '')],
     ['Success Message', String(settings.successMessage ?? '')],

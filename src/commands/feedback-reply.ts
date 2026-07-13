@@ -130,38 +130,46 @@ export function createFeedbackReplyCommand(getWriter: () => OutputWriter): Comma
 export function createFeedbackRepliesCommand(getWriter: () => OutputWriter): Command {
   return new Command('replies')
     .argument('<id>', 'Feedback ID')
-    .description('List all replies sent for a feedback item')
+    .description('List the complete feedback conversation')
     .action(async (id) => {
       const writer = getWriter();
       const client = requireClient();
 
       const result = await client.listReplies(id);
       const messages = result.messages ?? [];
-      const visibleWidgetMessages = messages.filter((item) => !item.replyId);
+      const linkedReplyIds = new Set(messages.map((item) => item.replyId).filter((replyId): replyId is string => replyId !== null));
+      const visibleEmailReplies = result.replies.filter((item) => !linkedReplyIds.has(item.id));
+      const conversation = [
+        ...visibleEmailReplies.map((item) => ({ kind: 'email' as const, item })),
+        ...messages.map((item) => ({ kind: 'thread' as const, item })),
+      ].sort((left, right) => new Date(left.item.createdAt).getTime() - new Date(right.item.createdAt).getTime());
 
       if (!writer.isMachineOutput()) {
         if (result.total === 0) {
           console.log(brand.muted('  No replies sent yet.'));
           console.log();
         } else {
-          console.log(brand.bold(`${result.total} repl${result.total === 1 ? 'y' : 'ies'} for feedback ${id}`));
+          console.log(brand.bold(`${result.total} conversation message${result.total === 1 ? '' : 's'} for feedback ${id}`));
           console.log();
-          for (const r of result.replies) {
-            console.log(`  ${brand.success('->')} ${brand.bold(r.sentBy)} ${brand.muted(r.createdAt)}`);
-            console.log(`    ${brand.muted('Delivery:')} email`);
-            console.log(`    ${brand.muted('Reply-to:')} ${r.replyToEmail}`);
-            console.log();
-            for (const line of r.content.split('\n')) {
-              console.log(`    ${line}`);
-            }
-            console.log();
-          }
-          for (const message of visibleWidgetMessages) {
-            console.log(`  ${brand.success('->')} ${brand.bold(message.sentByName ?? 'CLI')} ${brand.muted(message.createdAt)}`);
-            console.log(`    ${brand.muted('Delivery:')} widget`);
-            console.log();
-            for (const line of message.content.split('\n')) {
-              console.log(`    ${line}`);
+          for (const entry of conversation) {
+            if (entry.kind === 'email') {
+              const emailReply = entry.item;
+              console.log(`  ${brand.success('->')} ${brand.bold(emailReply.sentBy)} ${brand.muted(emailReply.createdAt)}`);
+              console.log(`    ${brand.muted('Delivery:')} email`);
+              console.log(`    ${brand.muted('Reply-to:')} ${emailReply.replyToEmail}`);
+              console.log();
+              for (const line of emailReply.content.split('\n')) {
+                console.log(`    ${line}`);
+              }
+            } else {
+              const message = entry.item;
+              const visitor = message.senderType === 'VISITOR';
+              console.log(`  ${visitor ? brand.primary('<-') : brand.success('->')} ${brand.bold(visitor ? 'User' : (message.sentByName ?? 'CLI'))} ${brand.muted(message.createdAt)}`);
+              console.log(`    ${brand.muted('Delivery:')} ${visitor ? 'visitor follow-up' : message.delivery === 'BOTH' ? 'email + widget/in-app' : 'widget/in-app'}`);
+              console.log();
+              for (const line of message.content.split('\n')) {
+                console.log(`    ${line}`);
+              }
             }
             console.log();
           }
@@ -169,7 +177,7 @@ export function createFeedbackRepliesCommand(getWriter: () => OutputWriter): Com
       }
 
       writer.ok({ replies: result.replies, messages }, {
-        summary: `${result.total} repl${result.total === 1 ? 'y' : 'ies'}`,
+        summary: `${result.total} conversation message${result.total === 1 ? '' : 's'}`,
         breadcrumbs: [
           { action: 'Send an email reply', cmd: `feedbackbasket feedback reply ${id} "<content>" --delivery email` },
           { action: 'Post a widget reply', cmd: `feedbackbasket feedback reply ${id} "<content>" --delivery widget` },
