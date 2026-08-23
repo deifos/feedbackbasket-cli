@@ -5,6 +5,7 @@ import { loadConfig } from '../config/config.js';
 import { errAuth, errUsage } from '../output/errors.js';
 import { brand, divider } from '../output/theme.js';
 import { confirm } from '../prompt.js';
+import { requireHighImpactConfirmation } from '../confirmation.js';
 import { resolveProject } from '../resolve.js';
 import type { OutputWriter } from '../output/writer.js';
 import type { Project } from '../types.js';
@@ -165,17 +166,17 @@ export function createProjectsCommand(getWriter: () => OutputWriter): Command {
       const id = resolved.id;
       const projectName = resolved.name;
 
-      // Confirmation (skip in agent mode or --yes)
       if (!opts.yes && !writer.isMachineOutput() && process.stdin.isTTY) {
         console.log(`  ${brand.warning('Warning:')} This will permanently delete project "${brand.bold(projectName)}"`);
         console.log(`  ${brand.muted('All feedback, notes, and settings will be lost.')}`);
         console.log();
-        const confirmed = await confirm(`  Delete "${projectName}"?`, false);
-        if (!confirmed) {
-          console.log(brand.muted('  Cancelled.'));
-          return;
-        }
       }
+      await requireHighImpactConfirmation(
+        writer,
+        Boolean(opts.yes),
+        `Delete "${projectName}"?`,
+        '--yes is required to delete a project in machine mode.',
+      );
 
       const result = await client.deleteProject(id);
 

@@ -4,11 +4,12 @@ import { AuthManager } from '../auth/manager.js';
 import { loadConfig } from '../config/config.js';
 import { errAuth, errUsage } from '../output/errors.js';
 import { brand } from '../output/theme.js';
+import { requireHighImpactConfirmation } from '../confirmation.js';
 import type { OutputWriter } from '../output/writer.js';
 
 export function createFeedbackNoteCommand(getWriter: () => OutputWriter): Command {
-  return new Command('note')
-    .argument('<id>', 'Feedback ID to add a note to')
+  const note = new Command('note')
+    .argument('[id]', 'Feedback ID to add a note to')
     .argument('[content]', 'Note content (or use --content)')
     .description('Add an internal note to a feedback item')
     .option('--content <text>', 'Note content (alternative to positional argument)')
@@ -16,6 +17,12 @@ export function createFeedbackNoteCommand(getWriter: () => OutputWriter): Comman
       const writer = getWriter();
       const content = contentArg ?? opts.content;
 
+      if (!id) {
+        throw errUsage(
+          'Feedback ID is required',
+          'Example: feedbackbasket feedback note <id> "Your note here"',
+        );
+      }
       if (!content) {
         throw errUsage(
           'Note content is required',
@@ -39,6 +46,42 @@ export function createFeedbackNoteCommand(getWriter: () => OutputWriter): Comman
         ],
       });
     });
+
+  note
+    .command('update <feedbackId> <noteId>')
+    .description('Update an internal feedback note')
+    .requiredOption('--content <text>', 'New note content')
+    .action(async (feedbackId, noteId, opts) => {
+      const writer = getWriter();
+      const client = requireClient();
+      const result = await client.updateNote(feedbackId, noteId, opts.content);
+      writer.ok(result, {
+        summary: `Updated note ${noteId}`,
+        breadcrumbs: [{ action: 'View feedback', cmd: `feedbackbasket feedback show ${feedbackId}` }],
+      });
+    });
+
+  note
+    .command('delete <feedbackId> <noteId>')
+    .description('Delete an internal feedback note')
+    .option('--yes', 'Confirm note deletion')
+    .action(async (feedbackId, noteId, opts) => {
+      const writer = getWriter();
+      const client = requireClient();
+      await requireHighImpactConfirmation(
+        writer,
+        Boolean(opts.yes),
+        `Delete note ${noteId}?`,
+        '--yes is required to delete a note in machine mode.',
+      );
+      const result = await client.deleteNote(feedbackId, noteId);
+      writer.ok(result, {
+        summary: `Deleted note ${noteId}`,
+        breadcrumbs: [{ action: 'View feedback', cmd: `feedbackbasket feedback show ${feedbackId}` }],
+      });
+    });
+
+  return note;
 }
 
 function requireClient(): FeedbackBasketClient {

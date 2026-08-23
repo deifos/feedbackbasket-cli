@@ -1,0 +1,11 @@
+{
+  "version": "3.0.0",
+  "operationIds": [
+    "projects.list", "projects.get", "projects.create", "projects.update", "projects.delete",
+    "feedback.list", "feedback.get", "feedback.search", "feedback.create", "feedback.update",
+    "feedback.delete", "feedback.bulkUpdate", "feedback.export", "bugs.list", "bugs.stats",
+    "notes.create", "notes.update", "notes.delete", "replies.list", "replies.send",
+    "widget.getSettings", "widget.updateSettings", "widget.getScript", "mobile.get", "mobile.update",
+    "mobile.rotateKey", "waitlist.list", "waitlist.export", "team.list", "team.updateRole", "team.remove"
+  ]
+}

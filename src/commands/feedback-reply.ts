@@ -5,6 +5,7 @@ import { loadConfig } from '../config/config.js';
 import { errAuth, errUsage } from '../output/errors.js';
 import { brand } from '../output/theme.js';
 import { ask } from '../prompt.js';
+import { requireHighImpactConfirmation } from '../confirmation.js';
 import type { OutputWriter } from '../output/writer.js';
 import type { ReplyDelivery } from '../types.js';
 
@@ -18,6 +19,7 @@ export function createFeedbackReplyCommand(getWriter: () => OutputWriter): Comma
     .option('--content <text>', 'Reply content (alternative to positional argument)')
     .option('--delivery <delivery>', 'Reply delivery (email, widget, in-app, both)', 'email')
     .option('--reply-to <email>', 'Reply-to email for email delivery')
+    .option('--yes', 'Confirm that the reply can be sent')
     .action(async (id, contentArg, opts) => {
       const writer = getWriter();
       const content = contentArg ?? opts.content;
@@ -91,6 +93,13 @@ export function createFeedbackReplyCommand(getWriter: () => OutputWriter): Comma
           'Use --delivery email for feedback with an email address, or ask the human how they want to respond.',
         );
       }
+
+      await requireHighImpactConfirmation(
+        writer,
+        Boolean(opts.yes),
+        `Send this reply by ${delivery}?`,
+        '--yes is required to send a reply in machine mode.',
+      );
 
       const result = await client.sendReply(id, content, {
         replyToEmail: replyTo,

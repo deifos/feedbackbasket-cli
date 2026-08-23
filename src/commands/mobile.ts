@@ -80,6 +80,7 @@ export function createMobileCommand(getWriter: () => OutputWriter): Command {
 
   mobile
     .command('bundle-ids [project]')
+    .alias('bundle')
     .description('Add or remove allowed iOS bundle IDs')
     .option('--add <bundle-id>', 'Bundle ID to add (repeatable)', collect, [])
     .option('--remove <bundle-id>', 'Bundle ID to remove (repeatable)', collect, [])

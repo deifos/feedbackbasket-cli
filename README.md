@@ -28,6 +28,8 @@ feedbackbasket bugs list --severity high
 
 The first time you log in, a setup wizard walks you through selecting a default project and installing the Claude Code skill.
 
+The CLI uses agent surface version `3.0.0`. CLI login accepts only private CLI credentials. It does not accept MCP keys. Use `--yes` for high-impact commands in agent or machine mode. Interactive use can show a confirmation prompt.
+
 ## Agent Usage
 
 Any AI agent with shell access (Claude Code, Codex, Cursor, OpenCode) can use the CLI directly:
@@ -49,6 +51,46 @@ When installing or configuring a widget for the current app, agents should not r
 ```bash
 feedbackbasket setup claude
 ```
+
+<!-- BEGIN GENERATED AGENT CAPABILITIES -->
+## Agent capability contract
+
+Agent surface version: `3.0.0`. The CLI and both MCP transports implement the same 31 product operations.
+
+| Product operation | CLI command | MCP tool | Required access | Confirm |
+| --- | --- | --- | --- | --- |
+| `projects.list` | `projects list` | `list_projects` | `read:projects` | No |
+| `projects.get` | `projects show` | `get_project` | `read:projects; allowed project` | No |
+| `projects.create` | `projects create` | `create_project` | `write:projects; unrestricted key` | No |
+| `projects.update` | `projects update` | `update_project` | `write:projects; allowed project` | No |
+| `projects.delete` | `projects delete` | `delete_project` | `write:projects; allowed project` | Yes |
+| `feedback.list` | `feedback list` | `get_feedback` | `read:feedback; allowed project` | No |
+| `feedback.get` | `feedback show` | `get_feedback_item` | `read:feedback; allowed project` | No |
+| `feedback.search` | `feedback search` | `search_feedback` | `read:feedback; allowed project` | No |
+| `feedback.create` | `feedback create` | `create_feedback` | `write:feedback; allowed project` | No |
+| `feedback.update` | `feedback update` | `update_feedback` | `write:feedback; allowed project` | No |
+| `feedback.delete` | `feedback delete` | `delete_feedback` | `write:feedback; allowed project` | Yes |
+| `feedback.bulkUpdate` | `feedback bulk-update` | `bulk_update_feedback` | `write:feedback; allowed project` | Yes |
+| `feedback.export` | `feedback export` | `export_feedback` | `read:feedback; allowed project` | No |
+| `bugs.list` | `bugs list` | `get_bug_reports` | `read:feedback; allowed project` | No |
+| `bugs.stats` | `bugs stats` | `get_bug_stats` | `read:feedback; allowed project` | No |
+| `notes.create` | `feedback note` | `create_feedback_note` | `write:notes; allowed project` | No |
+| `notes.update` | `feedback note update` | `update_feedback_note` | `write:notes; allowed project` | No |
+| `notes.delete` | `feedback note delete` | `delete_feedback_note` | `write:notes; allowed project` | Yes |
+| `replies.list` | `feedback replies` | `list_feedback_replies` | `read:feedback; allowed project` | No |
+| `replies.send` | `feedback reply` | `send_feedback_reply` | `write:replies; allowed project` | Yes |
+| `widget.getSettings` | `widget settings` | `get_widget_settings` | `read:projects; allowed project` | No |
+| `widget.updateSettings` | `widget update`<br>`widget flow` | `update_widget_settings` | `write:widget; allowed project` | No |
+| `widget.getScript` | `widget script` | `get_widget_script` | `read:projects; allowed project` | No |
+| `mobile.get` | `mobile status`<br>`mobile verify` | `get_mobile_integration` | `read:projects; allowed project` | No |
+| `mobile.update` | `mobile setup`<br>`mobile bundle`<br>`mobile conversations`<br>`mobile disable` | `update_mobile_integration` | `write:mobile; allowed project` | No |
+| `mobile.rotateKey` | `mobile rotate-key` | `rotate_mobile_project_key` | `write:mobile; allowed project` | Yes |
+| `waitlist.list` | `waitlist list` | `get_waitlist` | `read:feedback; allowed project` | No |
+| `waitlist.export` | `waitlist export` | `export_waitlist` | `read:feedback; allowed project` | No |
+| `team.list` | `team list` | `list_team_members` | `write:team; unrestricted key` | No |
+| `team.updateRole` | `team role` | `update_team_member_role` | `write:team; unrestricted key` | Yes |
+| `team.remove` | `team remove` | `remove_team_member` | `write:team; unrestricted key` | Yes |
+<!-- END GENERATED AGENT CAPABILITIES -->
 
 ## Commands
 

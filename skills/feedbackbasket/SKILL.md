@@ -7,6 +7,8 @@ description: Manage FeedbackBasket projects, feedback, bugs, website widgets, mo
 
 Full command-line interface for managing feedback, waitlist signups, bug reports, projects, widgets, and teams in FeedbackBasket. Works with any AI agent that can run shell commands.
 
+The unified agent surface version is `3.0.0`. It has 31 product operations. The CLI, stdio MCP package, and live Streamable HTTP MCP server implement the same contract.
+
 ## Authentication
 
 ```bash
@@ -28,6 +30,16 @@ feedbackbasket doctor                  # Full diagnostics
 | `--md` | Markdown | Documentation |
 
 **Agent rule**: Always use `--agent` for programmatic access. Parse the JSON output directly.
+
+## MCP Workflow Selection
+
+Use the CLI when the agent has shell access and an existing CLI login. Use MCP when the host supports MCP tools. For MCP, use either the `feedbackbasket-mcp-server@3.0.0` stdio package or the direct Streamable HTTP endpoint at `https://feedbackbasket.com/.well-known/mcp`.
+
+CLI credentials and MCP keys are private and are not interchangeable. Never put a credential in source, command arguments, logs, prompts, snapshots, generated files, or final responses. Use the host credential store or an environment variable.
+
+MCP read keys can use read operations only. Full keys can use writes that their scopes permit. A project-restricted key can access only its allowed projects. Project creation and team operations need an unrestricted full key. If a write is denied, do not try a different security path. Ask the user for the required access.
+
+High-impact operations need explicit approval. MCP calls must include `confirm: true`. CLI agent or machine commands must include `--yes`. These rules apply to project deletion, feedback deletion, bulk feedback updates, note deletion, replies, mobile key rotation, team role changes, and team removal.
 
 ## Quick Reference
 
@@ -123,14 +135,16 @@ feedbackbasket feedback create "Login button is broken" --content "Clicking Log 
 feedbackbasket feedback create "Feature idea" --content "Let users export saved views." --project <id> --type feature --metadata source=agent
 feedbackbasket feedback update <id> --status PLANNED --category BUG --sentiment NEGATIVE
 feedbackbasket feedback note <id> "Investigating — appears related to auth flow"
+feedbackbasket feedback note update <id> <note-id> --content "Updated internal note"
+feedbackbasket feedback note delete <id> <note-id> --yes
 feedbackbasket feedback delete <id> --yes
-feedbackbasket feedback bulk-update --status CLOSED --ids id1,id2,id3
+feedbackbasket feedback bulk-update --status CLOSED --ids id1,id2,id3 --yes
 
 # Reply to submitter by email, widget/in-app thread, or both
-feedbackbasket feedback reply <id> "Thanks for reporting — we pushed a fix!" --delivery email --reply-to support@example.com
-feedbackbasket feedback reply <id> "<content>" --delivery widget
-feedbackbasket feedback reply <id> "<content>" --delivery in-app
-feedbackbasket feedback reply <id> "<content>" --delivery both --reply-to support@example.com
+feedbackbasket feedback reply <id> "Thanks for reporting — we pushed a fix!" --delivery email --reply-to support@example.com --yes
+feedbackbasket feedback reply <id> "<content>" --delivery widget --yes
+feedbackbasket feedback reply <id> "<content>" --delivery in-app --yes
+feedbackbasket feedback reply <id> "<content>" --delivery both --reply-to support@example.com --yes
 feedbackbasket feedback replies <id>                                          # show the complete conversation
 
 # Export
@@ -182,7 +196,9 @@ Waitlist mode keeps the same project script and binds to the host app's own anno
 </form>
 ```
 
-Email is required and name is optional. Use `data-feedbackbasket-state="loading|success|error"` for custom UI, or listen for the bubbling `feedbackbasket:waitlist:success` and `feedbackbasket:waitlist:error` events. Do not add a competing submit handler.
+The form must be served from the website origin saved on the FeedbackBasket project. Email is required and name is optional. The script binds forms already on the page and forms added later, uses native browser validation, disables submit controls during the request, and keeps the host app's styling.
+
+Use `data-feedbackbasket-state="loading|success|error"` for custom UI. The bubbling `feedbackbasket:waitlist:success` event includes `detail.email` and `detail.duplicate`; `feedbackbasket:waitlist:error` includes `detail.message` and `detail.status`. Do not add a competing submit handler. Repeat submissions for the same project and email update the existing signup rather than creating a duplicate.
 
 ### Waitlist Signups
 
@@ -224,7 +240,7 @@ Use the basic widget experience by default: `displayMode` stays `modal`, and gui
 ### Team
 ```bash
 feedbackbasket team list
-feedbackbasket team role <memberId> --role admin
+feedbackbasket team role <memberId> --role admin --yes
 feedbackbasket team remove <memberId> --yes
 ```
 
@@ -316,10 +332,10 @@ feedbackbasket feedback show <id> --agent
 ```bash
 # Agent reads context, asks which delivery method to use, then sends it
 feedbackbasket feedback show <id> --agent                    # read email, replyChannel, project.replyToEmail
-feedbackbasket feedback reply <id> "<drafted response>" --delivery widget --agent
-feedbackbasket feedback reply <id> "<drafted response>" --delivery in-app --agent
-feedbackbasket feedback reply <id> "<drafted response>" --delivery email --reply-to support@example.com --agent
-feedbackbasket feedback reply <id> "<drafted response>" --delivery both --reply-to support@example.com --agent
+feedbackbasket feedback reply <id> "<drafted response>" --delivery widget --yes --agent
+feedbackbasket feedback reply <id> "<drafted response>" --delivery in-app --yes --agent
+feedbackbasket feedback reply <id> "<drafted response>" --delivery email --reply-to support@example.com --yes --agent
+feedbackbasket feedback reply <id> "<drafted response>" --delivery both --reply-to support@example.com --yes --agent
 feedbackbasket feedback update <id> --status COMPLETE --agent
 feedbackbasket feedback note <id> "Replied via CLI" --agent
 ```
@@ -381,10 +397,10 @@ Errors include hints:
 ## Invariants
 
 - Always authenticate before data commands
-- `--agent` flag suppresses all interactive prompts and confirmations
+- `--agent` suppresses interactive prompts. High-impact operations still need `--yes`.
 - Default project (set during login) is used when `--project` is not specified
 - Project names resolve case-insensitively with fuzzy matching
 - Write operations use full scope (granted by default during login)
 - Feedback IDs are stable CUIDs — safe to reference across commands
 - All timestamps are ISO 8601
-- `--yes` flag skips delete confirmations in interactive mode
+- `--yes` confirms all high-impact CLI operations in agent or machine mode
