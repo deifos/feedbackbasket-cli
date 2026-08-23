@@ -1,14 +1,35 @@
-import { createInterface } from 'node:readline/promises';
-import { stdin as input, stdout as output } from 'node:process';
-import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
-import { randomUUID } from 'node:crypto';
-import { URL } from 'node:url';
-import open from 'open';
-import { brand, logo } from '../output/theme.js';
+import { createInterface } from "node:readline/promises";
+import { stdin as input, stdout as output } from "node:process";
+import {
+  createServer,
+  type IncomingMessage,
+  type ServerResponse,
+} from "node:http";
+import { randomUUID } from "node:crypto";
+import { URL } from "node:url";
+import open from "open";
+import { brand, logo } from "../output/theme.js";
 
 interface LoginResult {
   token: string;
-  scope: 'read' | 'full';
+  scope: "read" | "full";
+}
+
+export function validateReturnedScope(
+  value: string | null,
+  maximum: "read" | "full",
+): "read" | "full" {
+  if (value !== "read" && value !== "full") {
+    throw new Error(
+      "The authorization response did not include a valid access level",
+    );
+  }
+  if (maximum === "read" && value === "full") {
+    throw new Error(
+      "The authorization response exceeds the requested access maximum",
+    );
+  }
+  return value;
 }
 
 const TIMEOUT_MS = 120_000;
@@ -48,35 +69,43 @@ const ERROR_HTML = (message: string) => `<!DOCTYPE html>
   <p>${message}</p>
 </div></body></html>`;
 
-export async function browserLogin(baseUrl: string, scope: 'read' | 'full' = 'read'): Promise<LoginResult> {
+export async function browserLogin(
+  baseUrl: string,
+  scope: "read" | "full" = "read",
+): Promise<LoginResult> {
   const state = randomUUID();
 
   return new Promise<LoginResult>((resolve, reject) => {
     const server = createServer((req: IncomingMessage, res: ServerResponse) => {
-      const url = new URL(req.url ?? '/', `http://127.0.0.1`);
+      const url = new URL(req.url ?? "/", `http://127.0.0.1`);
 
-      if (url.pathname !== '/callback') {
+      if (url.pathname !== "/callback") {
         res.writeHead(404);
-        res.end('Not found');
+        res.end("Not found");
         return;
       }
 
-      const receivedState = url.searchParams.get('state');
-      const token = url.searchParams.get('token');
-      const error = url.searchParams.get('error');
+      const receivedState = url.searchParams.get("state");
+      const token = url.searchParams.get("token");
+      const returnedScope = url.searchParams.get("scope");
+      const error = url.searchParams.get("error");
 
       // CSRF validation
       if (receivedState !== state) {
-        res.writeHead(400, { 'Content-Type': 'text/html' });
-        res.end(ERROR_HTML('State mismatch — possible CSRF attack. Please try again.'));
+        res.writeHead(400, { "Content-Type": "text/html" });
+        res.end(
+          ERROR_HTML(
+            "State mismatch — possible CSRF attack. Please try again.",
+          ),
+        );
         cleanup();
-        reject(new Error('State mismatch during authentication'));
+        reject(new Error("State mismatch during authentication"));
         return;
       }
 
       // User denied
       if (error) {
-        res.writeHead(200, { 'Content-Type': 'text/html' });
+        res.writeHead(200, { "Content-Type": "text/html" });
         res.end(ERROR_HTML(`Authorization was denied: ${error}`));
         cleanup();
         reject(new Error(`Authorization denied: ${error}`));
@@ -85,23 +114,36 @@ export async function browserLogin(baseUrl: string, scope: 'read' | 'full' = 're
 
       // Missing token
       if (!token) {
-        res.writeHead(400, { 'Content-Type': 'text/html' });
-        res.end(ERROR_HTML('No token received. Please try again.'));
+        res.writeHead(400, { "Content-Type": "text/html" });
+        res.end(ERROR_HTML("No token received. Please try again."));
         cleanup();
-        reject(new Error('No token received in callback'));
+        reject(new Error("No token received in callback"));
+        return;
+      }
+
+      let selectedScope: "read" | "full";
+      try {
+        selectedScope = validateReturnedScope(returnedScope, scope);
+      } catch (cause) {
+        const message =
+          cause instanceof Error ? cause.message : "Invalid access level";
+        res.writeHead(400, { "Content-Type": "text/html" });
+        res.end(ERROR_HTML(message));
+        cleanup();
+        reject(new Error(message));
         return;
       }
 
       // Success
-      res.writeHead(200, { 'Content-Type': 'text/html' });
+      res.writeHead(200, { "Content-Type": "text/html" });
       res.end(SUCCESS_HTML);
       cleanup();
-      resolve({ token, scope });
+      resolve({ token, scope: selectedScope });
     });
 
     const timeout = setTimeout(() => {
       cleanup();
-      reject(new Error('Authentication timed out after 2 minutes'));
+      reject(new Error("Authentication timed out after 2 minutes"));
     }, TIMEOUT_MS);
 
     function cleanup() {
@@ -110,11 +152,11 @@ export async function browserLogin(baseUrl: string, scope: 'read' | 'full' = 're
     }
 
     // Listen on random port on loopback
-    server.listen(0, '127.0.0.1', () => {
+    server.listen(0, "127.0.0.1", () => {
       const addr = server.address();
-      if (!addr || typeof addr === 'string') {
+      if (!addr || typeof addr === "string") {
         cleanup();
-        reject(new Error('Failed to start local auth server'));
+        reject(new Error("Failed to start local auth server"));
         return;
       }
 
@@ -124,14 +166,18 @@ export async function browserLogin(baseUrl: string, scope: 'read' | 'full' = 're
       console.log();
       console.log(`  ${logo()} CLI`);
       console.log();
-      console.log(`  ${brand.primary('Opening browser for authentication...')}`);
+      console.log(
+        `  ${brand.primary("Opening browser for authentication...")}`,
+      );
       console.log();
-      console.log(`  ${brand.muted('If the browser doesn\'t open, visit:')}`);
+      console.log(`  ${brand.muted("If the browser doesn't open, visit:")}`);
       console.log(`  ${brand.primary(authorizeUrl)}`);
       console.log();
-      console.log(`  ${brand.muted('Waiting for authentication...')}`);
-      console.log(`  ${brand.muted('If this machine cannot receive the localhost browser callback, use:')}`);
-      console.log(`  ${brand.command('feedbackbasket login --manual')}`);
+      console.log(`  ${brand.muted("Waiting for authentication...")}`);
+      console.log(
+        `  ${brand.muted("If this machine cannot receive the localhost browser callback, use:")}`,
+      );
+      console.log(`  ${brand.command("feedbackbasket login --manual")}`);
       console.log();
 
       open(authorizeUrl).catch(() => {
@@ -141,20 +187,31 @@ export async function browserLogin(baseUrl: string, scope: 'read' | 'full' = 're
   });
 }
 
-export async function manualLogin(baseUrl: string, scope: 'read' | 'full' = 'read'): Promise<LoginResult> {
+export async function manualLogin(
+  baseUrl: string,
+  scope: "read" | "full" = "read",
+): Promise<LoginResult> {
   const authorizeUrl = `${baseUrl}/cli/authorize?mode=manual&scope=${scope}`;
 
   console.log();
   console.log(`  ${logo()} CLI`);
   console.log();
-  console.log(`  ${brand.primary('Open this URL on any machine with a browser:')}`);
+  console.log(
+    `  ${brand.primary("Open this URL on any machine with a browser:")}`,
+  );
   console.log();
   console.log(`  ${brand.primary(authorizeUrl)}`);
   console.log();
-  console.log(`  ${brand.muted('Use this when a remote server cannot receive the localhost browser callback.')}`);
-  console.log(`  ${brand.muted('The CLI still needs outbound HTTPS access to verify and use the token.')}`);
+  console.log(
+    `  ${brand.muted("Use this when a remote server cannot receive the localhost browser callback.")}`,
+  );
+  console.log(
+    `  ${brand.muted("The CLI still needs outbound HTTPS access to verify and use the token.")}`,
+  );
   console.log();
-  console.log(`  ${brand.muted('After approving access, paste the token shown in your browser.')}`);
+  console.log(
+    `  ${brand.muted("After approving access, paste the token shown in your browser.")}`,
+  );
   console.log();
 
   open(authorizeUrl).catch(() => {
@@ -163,14 +220,27 @@ export async function manualLogin(baseUrl: string, scope: 'read' | 'full' = 'rea
 
   const rl = createInterface({ input, output });
   try {
-    const token = (await rl.question('  Paste token: ')).trim();
-    if (!token) {
-      throw new Error('No token provided');
+    const rawResult = (
+      await rl.question("  Paste authorization result: ")
+    ).trim();
+    let parsed: { token?: unknown; scope?: unknown };
+    try {
+      parsed = JSON.parse(rawResult) as { token?: unknown; scope?: unknown };
+    } catch {
+      throw new Error(
+        "Expected the authorization result copied from the browser",
+      );
     }
-    if (!isCliTokenFormat(token)) {
-      throw new Error('Expected a FeedbackBasket CLI token beginning with fb_cli_');
+    if (typeof parsed.token !== "string" || !isCliTokenFormat(parsed.token)) {
+      throw new Error(
+        "Expected a FeedbackBasket CLI token beginning with fb_cli_",
+      );
     }
-    return { token, scope };
+    const selectedScope = validateReturnedScope(
+      typeof parsed.scope === "string" ? parsed.scope : null,
+      scope,
+    );
+    return { token: parsed.token, scope: selectedScope };
   } finally {
     rl.close();
   }
