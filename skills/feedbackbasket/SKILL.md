@@ -7,43 +7,50 @@ description: Manage FeedbackBasket projects, feedback, bugs, website widgets, mo
 
 Full command-line interface for managing feedback, waitlist signups, bug reports, projects, widgets, and teams in FeedbackBasket. Works with any AI agent that can run shell commands.
 
-The unified agent surface version is `3.0.0`. It has 31 product operations. The CLI, stdio MCP package, and live Streamable HTTP MCP server implement the same contract.
+The unified agent surface version is `3.1.0`. It has 31 product operations. The CLI, stdio MCP package, and live Streamable HTTP MCP server implement the same contract.
 
 ## Authentication
 
 ```bash
-feedbackbasket login                   # Opens browser — one click, full access
+feedbackbasket login                   # Browser selects Read or Full access
 feedbackbasket login --manual          # No localhost browser callback (remote servers)
 feedbackbasket login --token <TOKEN>   # Manual token (CI/headless)
 feedbackbasket auth status             # Check auth state
 feedbackbasket doctor                  # Full diagnostics
 ```
 
+The browser selects the organization, Read or Full access, and Selected projects or All projects. Read is the default. Full needs an explicit choice and an owner or administrator role. `--scope read|full` sets the maximum browser access. It does not make the final choice. Selected projects limits the credential to the projects that the user approves. All projects includes current and future projects and is required for project creation and team operations.
+
 ## Output Modes
 
-| Flag | Output | When to Use |
-|------|--------|-------------|
-| (none) | Styled (TTY) or JSON (piped) | Auto-detect |
-| `--json` | JSON envelope with breadcrumbs | Parse full response |
-| `--agent` | Raw JSON data only | Agent automation |
-| `--quiet` | Raw JSON data only | Scripting |
-| `--md` | Markdown | Documentation |
+| Flag      | Output                         | When to Use         |
+| --------- | ------------------------------ | ------------------- |
+| (none)    | Styled (TTY) or JSON (piped)   | Auto-detect         |
+| `--json`  | JSON envelope with breadcrumbs | Parse full response |
+| `--agent` | Raw JSON data only             | Agent automation    |
+| `--quiet` | Raw JSON data only             | Scripting           |
+| `--md`    | Markdown                       | Documentation       |
 
 **Agent rule**: Always use `--agent` for programmatic access. Parse the JSON output directly.
 
 ## MCP Workflow Selection
 
-Use the CLI when the agent has shell access and an existing CLI login. Use MCP when the host supports MCP tools. For MCP, use either the `feedbackbasket-mcp-server@3.0.0` stdio package or the direct Streamable HTTP endpoint at `https://feedbackbasket.com/.well-known/mcp`.
+Use the CLI when the agent has shell access and an existing CLI login. Use MCP when the host supports MCP tools.
 
-CLI credentials and MCP keys are private and are not interchangeable. Never put a credential in source, command arguments, logs, prompts, snapshots, generated files, or final responses. Use the host credential store or an environment variable.
+For remote MCP, add `https://feedbackbasket.com/.well-known/mcp` to the host. Save it, select **Authenticate**, sign in, select an organization, select Read or Full access, select Selected projects or All projects, and select **Allow**. Browser OAuth is the recommended remote setup. Do not ask the user to paste an OAuth token.
 
-MCP read keys can use read operations only. Full keys can use writes that their scopes permit. A project-restricted key can access only its allowed projects. Project creation and team operations need an unrestricted full key. If a write is denied, do not try a different security path. Ask the user for the required access.
+For local STDIO MCP, CI, servers, or unattended automation, use `feedbackbasket-mcp-server@3.1.0` with an `fb_key_` credential from the host credential store or an environment variable. Browser OAuth is only for Streamable HTTP. STDIO still uses an environment credential. The CLI keeps `feedbackbasket login` and its private `fb_cli_` token flow in this release.
+
+Access tokens, refresh tokens, CLI tokens, and MCP keys are private and are not interchangeable. Never put a credential in source, command arguments, logs, prompts, snapshots, generated files, or final responses. Use browser OAuth, the host credential store, or an environment variable as applicable.
+
+Read credentials can use read operations only. Full credentials can use writes that their scopes permit. A Selected-projects credential can access only its approved projects. Project creation and team operations need Full access and All projects. Existing unrestricted full keys remain compatible. New browser grants never get All-projects access without an explicit choice. If a write is denied, do not try a different security path. Ask the user for the required access.
 
 High-impact operations need explicit approval. MCP calls must include `confirm: true`. CLI agent or machine commands must include `--yes`. These rules apply to project deletion, feedback deletion, bulk feedback updates, note deletion, replies, mobile key rotation, team role changes, and team removal.
 
 ## Quick Reference
 
 ### Projects
+
 ```bash
 feedbackbasket projects list
 feedbackbasket projects show <name-or-id>
@@ -123,6 +130,7 @@ Treat a supplied project key as production unless the user explicitly confirms a
 `mobile setup` is idempotent and adds bundle IDs without replacing existing entries. Do not rotate a key or disable mobile feedback unless the user explicitly requested that disruptive action. Rotation stops every released app using the previous key.
 
 ### Feedback
+
 ```bash
 # Read
 feedbackbasket feedback list --project <id> --category BUG --status OPEN --sentiment NEGATIVE
@@ -154,12 +162,14 @@ feedbackbasket feedback export <project> --format json
 ```
 
 ### Bug Reports
+
 ```bash
 feedbackbasket bugs list --severity high --status OPEN --project <id>
 feedbackbasket bugs stats --project <id>
 ```
 
 ### Widget
+
 ```bash
 # Get embed code (ready to paste into HTML)
 feedbackbasket widget script <project>
@@ -190,8 +200,8 @@ Waitlist mode keeps the same project script and binds to the host app's own anno
 
 ```html
 <form data-feedbackbasket-waitlist>
-  <input name="name" autocomplete="name">
-  <input name="email" type="email" autocomplete="email" required>
+  <input name="name" autocomplete="name" />
+  <input name="email" type="email" autocomplete="email" required />
   <button type="submit">Join the waitlist</button>
 </form>
 ```
@@ -214,7 +224,9 @@ Agent output includes signup emails, optional names, captured/referrer pages, to
 For inline trigger mode, load the widget once and call the public API from the host app's custom button:
 
 ```html
-<button onclick="window.FeedbackWidget.openFeedbackForm({ trigger: event.currentTarget })">
+<button
+  onclick="window.FeedbackWidget.openFeedbackForm({ trigger: event.currentTarget })"
+>
   Feedback
 </button>
 ```
@@ -222,7 +234,11 @@ For inline trigger mode, load the widget once and call the public API from the h
 In React:
 
 ```tsx
-<button onClick={(event) => window.FeedbackWidget.openFeedbackForm({ trigger: event.currentTarget })}>
+<button
+  onClick={(event) =>
+    window.FeedbackWidget.openFeedbackForm({ trigger: event.currentTarget })
+  }
+>
   Feedback
 </button>
 ```
@@ -238,6 +254,7 @@ Use the basic widget experience by default: `displayMode` stays `modal`, and gui
 `widget flow --config` accepts either a `feedbackFlow` object or a JSON object with a `feedbackFlow` key. Use it only when the user wants to customize visitor choices such as Bug report, Feature request, and General feedback. Supported v1 question types are `text`, `textarea`, and `single_choice`.
 
 ### Team
+
 ```bash
 feedbackbasket team list
 feedbackbasket team role <memberId> --role admin --yes
@@ -245,6 +262,7 @@ feedbackbasket team remove <memberId> --yes
 ```
 
 ### Utilities
+
 ```bash
 feedbackbasket doctor                  # Health check (auth, connectivity, skill)
 feedbackbasket setup claude            # Install this skill for Claude Code
@@ -253,6 +271,7 @@ feedbackbasket setup claude            # Install this skill for Claude Code
 ## Common Agent Workflows
 
 ### Add a widget to the current app
+
 ```bash
 # First resolve the project for this app. Do not rely on the CLI default project.
 feedbackbasket projects list --agent
@@ -269,6 +288,7 @@ feedbackbasket widget settings "My App" --color "#22c55e" --label "Feedback" --a
 ```
 
 ### Triage new feedback
+
 ```bash
 feedbackbasket feedback list --status OPEN --agent
 # Review items, then update:
@@ -277,6 +297,7 @@ feedbackbasket feedback note <id> "Reviewing — appears related to auth flow" -
 ```
 
 ### Capture new feedback without leaving the terminal
+
 ```bash
 feedbackbasket feedback create "Login button is broken" \
   --content "Clicking Log in does nothing in Safari." \
@@ -286,6 +307,7 @@ feedbackbasket feedback create "Login button is broken" \
   --metadata source=agent \
   --agent
 ```
+
 Agent mode returns the created feedback ID, dashboard URL, and feedback object. Created feedback is analyzed by AI and follows the project's notification settings.
 
 ### File agent-found issues in FeedbackBasket
@@ -322,6 +344,7 @@ feedbackbasket feedback create "<short title>" \
 After creation, report the feedback ID and dashboard URL to the user.
 
 ### Investigate high-priority bugs
+
 ```bash
 feedbackbasket bugs list --severity high --agent
 feedbackbasket feedback show <id> --agent
@@ -329,6 +352,7 @@ feedbackbasket feedback show <id> --agent
 ```
 
 ### Close the loop — reply to the submitter
+
 ```bash
 # Agent reads context, asks which delivery method to use, then sends it
 feedbackbasket feedback show <id> --agent                    # read email, replyChannel, project.replyToEmail
@@ -339,7 +363,9 @@ feedbackbasket feedback reply <id> "<drafted response>" --delivery both --reply-
 feedbackbasket feedback update <id> --status COMPLETE --agent
 feedbackbasket feedback note <id> "Replied via CLI" --agent
 ```
+
 **Important reply safety rules:**
+
 - Before replying, the agent MUST inspect `feedback show --agent`, including `replyChannel` and `awaitingOwnerReply`, then ask the human which available delivery method to use unless the human already specified it in the current conversation.
 - If `replyChannel: "in_app"`, use `--delivery in-app`. If `replyChannel: "widget"`, use `--delivery widget`. Use `--delivery both` only when an email address and a reply channel are both available.
 - If `feedback show` returns `email: null`, do not use `--delivery email` or `--delivery both`. If `replyChannel: null`, do not use thread delivery.
@@ -350,12 +376,14 @@ feedbackbasket feedback note <id> "Replied via CLI" --agent
 Never silently guess a reply-to address. It becomes the "From" address the customer sees.
 
 ### Export for analysis
+
 ```bash
 feedbackbasket feedback export myapp --format json --agent
 # Agent can parse the JSON and generate reports
 ```
 
 ### Search for patterns
+
 ```bash
 feedbackbasket feedback search "login" --agent
 feedbackbasket feedback search "crash" --category BUG --agent
@@ -363,16 +391,17 @@ feedbackbasket feedback search "crash" --category BUG --agent
 
 ## Filtering Options
 
-| Type | Values |
-|------|--------|
-| Categories | `BUG`, `FEATURE_REQUEST`, `IMPROVEMENT`, `QUESTION` |
-| Statuses | `OPEN`, `UNDER_REVIEW`, `PLANNED`, `IN_PROGRESS`, `COMPLETE`, `CLOSED` |
-| Sentiments | `POSITIVE`, `NEGATIVE`, `NEUTRAL` |
-| Bug Severity | `high`, `medium`, `low` |
+| Type         | Values                                                                 |
+| ------------ | ---------------------------------------------------------------------- |
+| Categories   | `BUG`, `FEATURE_REQUEST`, `IMPROVEMENT`, `QUESTION`                    |
+| Statuses     | `OPEN`, `UNDER_REVIEW`, `PLANNED`, `IN_PROGRESS`, `COMPLETE`, `CLOSED` |
+| Sentiments   | `POSITIVE`, `NEGATIVE`, `NEUTRAL`                                      |
+| Bug Severity | `high`, `medium`, `low`                                                |
 
 ## JSON Envelope
 
 When using `--json`, responses include breadcrumbs:
+
 ```json
 {
   "ok": true,
@@ -385,6 +414,7 @@ When using `--json`, responses include breadcrumbs:
 ```
 
 Errors include hints:
+
 ```json
 {
   "ok": false,
@@ -403,4 +433,4 @@ Errors include hints:
 - Write operations use full scope (granted by default during login)
 - Feedback IDs are stable CUIDs — safe to reference across commands
 - All timestamps are ISO 8601
-- `--yes` confirms all high-impact CLI operations in agent or machine mode
+- `--yes` confirms all high-impact CLI operations in agent or machine mode.

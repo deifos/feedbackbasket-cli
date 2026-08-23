@@ -10,7 +10,7 @@ Inspired by the [Basecamp CLI](https://github.com/basecamp/basecamp-cli). Everyt
 # Install
 npm install -g feedbackbasket-cli
 
-# Authenticate (opens browser, full access by default)
+# Authenticate (the browser selects Read or Full access)
 feedbackbasket login
 
 # Or use a token directly (for CI/headless)
@@ -26,9 +26,11 @@ feedbackbasket feedback create "Login button is broken" --project myapp --type b
 feedbackbasket bugs list --severity high
 ```
 
+The browser selects the organization, Read or Full access, and Selected projects or All projects. Read is selected by default. Full needs an explicit choice and an owner or administrator role. Selected projects limits the token to approved projects. All projects includes current and future projects and is required for project creation and team operations. The `--scope read|full` option sets the maximum browser access. It does not make the final choice.
+
 The first time you log in, a setup wizard walks you through selecting a default project and installing the Claude Code skill.
 
-The CLI uses agent surface version `3.0.0`. CLI login accepts only private CLI credentials. It does not accept MCP keys. Use `--yes` for high-impact commands in agent or machine mode. Interactive use can show a confirmation prompt.
+The CLI uses agent surface version `3.1.0`. CLI login accepts only private CLI credentials. It does not accept MCP keys or OAuth tokens. Use `--yes` for high-impact commands in agent or machine mode. Interactive use can show a confirmation prompt. Never put an access token, refresh token, CLI token, or MCP key in source, prompts, logs, generated configuration, or final output.
 
 ## Agent Usage
 
@@ -55,7 +57,7 @@ feedbackbasket setup claude
 <!-- BEGIN GENERATED AGENT CAPABILITIES -->
 ## Agent capability contract
 
-Agent surface version: `3.0.0`. The CLI and both MCP transports implement the same 31 product operations.
+Agent surface version: `3.1.0`. The CLI and both MCP transports implement the same 31 product operations.
 
 | Product operation | CLI command | MCP tool | Required access | Confirm |
 | --- | --- | --- | --- | --- |
@@ -211,7 +213,9 @@ Waitlist listing returns emails, optional names, source pages, total counts, the
 For inline trigger mode, load the widget once and call the public API from your own button:
 
 ```html
-<button onclick="window.FeedbackWidget.openFeedbackForm({ trigger: event.currentTarget })">
+<button
+  onclick="window.FeedbackWidget.openFeedbackForm({ trigger: event.currentTarget })"
+>
   Feedback
 </button>
 ```
@@ -299,13 +303,13 @@ feedbackbasket setup claude   # Install Claude Code skill
 
 The CLI automatically detects your environment:
 
-| Context | Behavior |
-|---------|----------|
-| **Terminal (TTY)** | Styled, human-readable output with FeedbackBasket brand colors |
-| **Piped** | JSON output automatically |
-| `--json` | Full JSON envelope with breadcrumbs |
-| `--quiet` / `--agent` | Raw JSON data only (no envelope) |
-| `--md` | Markdown formatted |
+| Context               | Behavior                                                       |
+| --------------------- | -------------------------------------------------------------- |
+| **Terminal (TTY)**    | Styled, human-readable output with FeedbackBasket brand colors |
+| **Piped**             | JSON output automatically                                      |
+| `--json`              | Full JSON envelope with breadcrumbs                            |
+| `--quiet` / `--agent` | Raw JSON data only (no envelope)                               |
+| `--md`                | Markdown formatted                                             |
 
 ### JSON Envelope
 
@@ -338,28 +342,28 @@ feedbackbasket feedback list --project other-app  # override
 
 ### Environment Variables
 
-| Variable | Description |
-|----------|-------------|
-| `FEEDBACKBASKET_TOKEN` | CLI token (bypasses stored credentials) |
-| `FEEDBACKBASKET_BASE_URL` | API base URL override |
+| Variable                  | Description                             |
+| ------------------------- | --------------------------------------- |
+| `FEEDBACKBASKET_TOKEN`    | CLI token (bypasses stored credentials) |
+| `FEEDBACKBASKET_BASE_URL` | API base URL override                   |
 
 ### Global Flags
 
-| Flag | Description |
-|------|-------------|
-| `--json` | Full JSON envelope output |
-| `--quiet` / `--agent` | Raw JSON data only |
-| `--md` | Markdown output |
-| `--base-url <url>` | Override API base URL |
+| Flag                  | Description               |
+| --------------------- | ------------------------- |
+| `--json`              | Full JSON envelope output |
+| `--quiet` / `--agent` | Raw JSON data only        |
+| `--md`                | Markdown output           |
+| `--base-url <url>`    | Override API base URL     |
 
 ## Filter Options
 
-| Type | Values |
-|------|--------|
-| **Categories** | `BUG`, `FEATURE_REQUEST`, `IMPROVEMENT`, `QUESTION` |
-| **Statuses** | `OPEN`, `UNDER_REVIEW`, `PLANNED`, `IN_PROGRESS`, `COMPLETE`, `CLOSED` |
-| **Sentiments** | `POSITIVE`, `NEGATIVE`, `NEUTRAL` |
-| **Bug Severity** | `high`, `medium`, `low` |
+| Type             | Values                                                                 |
+| ---------------- | ---------------------------------------------------------------------- |
+| **Categories**   | `BUG`, `FEATURE_REQUEST`, `IMPROVEMENT`, `QUESTION`                    |
+| **Statuses**     | `OPEN`, `UNDER_REVIEW`, `PLANNED`, `IN_PROGRESS`, `COMPLETE`, `CLOSED` |
+| **Sentiments**   | `POSITIVE`, `NEGATIVE`, `NEUTRAL`                                      |
+| **Bug Severity** | `high`, `medium`, `low`                                                |
 
 ## Development
 

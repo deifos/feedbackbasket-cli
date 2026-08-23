@@ -2,6 +2,22 @@
 
 ## Unreleased
 
+## [3.1.0] - 2026-08-22
+
+### Added
+
+- Added browser choices for Read or Full access and Selected projects or All projects.
+
+### Changed
+
+- The browser now returns the selected access level, and the CLI validates and stores that value.
+- `--scope` now sets the maximum browser access instead of making the final choice.
+- The CLI and both MCP transports now report agent surface version `3.1.0` with the same 31 operations.
+
+### Fixed
+
+- Machine-readable login output now reports the access level selected in the browser.
+
 ## [3.0.0] - 2026-08-22
 
 ### Added
