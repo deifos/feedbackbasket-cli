@@ -26,7 +26,7 @@ export function createAuthCommand(getWriter: () => OutputWriter): Command {
     .action(async (opts) => {
       const writer = getWriter();
       const config = loadConfig();
-      const scope = opts.scope === 'read' ? 'read' as const : 'full' as const;
+      const scope = resolveAuthScope(opts.scope);
       const isInteractive = !writer.isMachineOutput() && process.stdin.isTTY;
 
       // ── Step 1: Authentication ──
@@ -330,6 +330,11 @@ export function createAuthCommand(getWriter: () => OutputWriter): Command {
     });
 
   return auth;
+}
+
+export function resolveAuthScope(value: string): 'read' | 'full' {
+  if (value === 'read' || value === 'full') return value;
+  throw errUsage('Scope must be "read" or "full"');
 }
 
 // Top-level aliases: `feedbackbasket login` and `feedbackbasket logout`

@@ -1,6 +1,6 @@
 {
   "name": "feedbackbasket-cli",
-  "version": "0.12.0",
+  "version": "3.0.0",
   "description": "Command-line interface for FeedbackBasket — manage feedback and waitlists from your terminal",
   "type": "module",
   "main": "dist/src/cli.js",
@@ -12,7 +12,10 @@
     "test": "tsx --test tests/*.test.ts",
     "dev": "tsx bin/feedbackbasket.ts",
     "start": "node dist/bin/feedbackbasket.js",
-    "prepublishOnly": "npm run build"
+    "check:parity": "tsx scripts/check-parity.ts",
+    "docs:generate": "tsx scripts/generate-capabilities.ts",
+    "docs:check": "tsx scripts/generate-capabilities.ts --check",
+    "prepublishOnly": "npm run check:parity && npm run docs:check && npm test && npm run build"
   },
   "keywords": [
     "feedbackbasket",
@@ -29,6 +32,7 @@
   },
   "homepage": "https://feedbackbasket.com",
   "dependencies": {
+    "feedbackbasket-agent-contract": "3.0.0",
     "chalk": "^5.3.0",
     "commander": "^13.1.0",
     "open": "^10.1.0"
@@ -44,6 +48,7 @@
   "files": [
     "dist/**/*",
     "skills/**/*",
-    "README.md"
+    "README.md",
+    "CHANGELOG.md"
   ]
 }

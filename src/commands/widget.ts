@@ -55,6 +55,7 @@ export function createWidgetCommand(getWriter: () => OutputWriter): Command {
   // --- widget settings ---
   widget
     .command('settings [project]')
+    .alias('update')
     .description('View or update widget settings')
     .option('--capture-mode <mode>', 'Capture mode (feedback, waitlist)')
     .option('--color <hex>', 'Button color (e.g. #22c55e)')

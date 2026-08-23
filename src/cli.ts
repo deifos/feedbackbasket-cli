@@ -28,7 +28,7 @@ function getWriter(): OutputWriter {
   return writer;
 }
 
-export function run(): void {
+export function createProgram(): Command {
   const program = new Command('feedbackbasket')
     .version(VERSION, '-v, --version')
     .description('Command-line interface for FeedbackBasket')
@@ -75,6 +75,12 @@ export function run(): void {
 
   // Global error handler
   program.exitOverride();
+
+  return program;
+}
+
+export function run(): void {
+  const program = createProgram();
 
   (async () => {
     try {

@@ -4,7 +4,7 @@ import { AuthManager } from '../auth/manager.js';
 import { loadConfig } from '../config/config.js';
 import { errAuth } from '../output/errors.js';
 import { brand } from '../output/theme.js';
-import { confirm } from '../prompt.js';
+import { requireHighImpactConfirmation } from '../confirmation.js';
 import type { OutputWriter } from '../output/writer.js';
 
 export function createFeedbackDeleteCommand(getWriter: () => OutputWriter): Command {
@@ -19,12 +19,13 @@ export function createFeedbackDeleteCommand(getWriter: () => OutputWriter): Comm
       if (!opts.yes && !writer.isMachineOutput() && process.stdin.isTTY) {
         console.log(`  ${brand.warning('Warning:')} This will permanently delete feedback ${brand.bold(id)}`);
         console.log();
-        const confirmed = await confirm('  Delete this feedback?', false);
-        if (!confirmed) {
-          console.log(brand.muted('  Cancelled.'));
-          return;
-        }
       }
+      await requireHighImpactConfirmation(
+        writer,
+        Boolean(opts.yes),
+        'Delete this feedback?',
+        '--yes is required to delete feedback in machine mode.',
+      );
 
       const result = await client.deleteFeedback(id);
 

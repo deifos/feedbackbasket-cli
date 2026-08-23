@@ -4,7 +4,7 @@ import { AuthManager } from '../auth/manager.js';
 import { loadConfig } from '../config/config.js';
 import { errAuth, errUsage } from '../output/errors.js';
 import { brand, divider } from '../output/theme.js';
-import { confirm } from '../prompt.js';
+import { requireHighImpactConfirmation } from '../confirmation.js';
 import type { OutputWriter } from '../output/writer.js';
 
 export function createTeamCommand(getWriter: () => OutputWriter): Command {
@@ -38,6 +38,7 @@ export function createTeamCommand(getWriter: () => OutputWriter): Command {
     .command('role <memberId>')
     .description('Update a member\'s role')
     .requiredOption('--role <role>', 'New role: admin or member')
+    .option('--yes', 'Confirm the role change')
     .action(async (memberId, opts) => {
       const writer = getWriter();
       const client = requireClient();
@@ -45,6 +46,13 @@ export function createTeamCommand(getWriter: () => OutputWriter): Command {
       if (!['admin', 'member'].includes(opts.role)) {
         throw errUsage('Role must be "admin" or "member"');
       }
+
+      await requireHighImpactConfirmation(
+        writer,
+        Boolean(opts.yes),
+        `Change member ${memberId} to ${opts.role}?`,
+        '--yes is required to change a team role in machine mode.',
+      );
 
       const result = await client.updateMemberRole(memberId, opts.role);
 
@@ -70,13 +78,12 @@ export function createTeamCommand(getWriter: () => OutputWriter): Command {
       const writer = getWriter();
       const client = requireClient();
 
-      if (!opts.yes && !writer.isMachineOutput() && process.stdin.isTTY) {
-        const confirmed = await confirm(`  Remove member ${memberId}?`, false);
-        if (!confirmed) {
-          console.log(brand.muted('  Cancelled.'));
-          return;
-        }
-      }
+      await requireHighImpactConfirmation(
+        writer,
+        Boolean(opts.yes),
+        `Remove member ${memberId}?`,
+        '--yes is required to remove a team member in machine mode.',
+      );
 
       const result = await client.removeMember(memberId);
 

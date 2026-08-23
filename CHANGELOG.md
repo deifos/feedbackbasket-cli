@@ -2,6 +2,18 @@
 
 ## Unreleased
 
+## [3.0.0] - 2026-08-22
+
+### Added
+
+- Added all 31 versioned product-operation mappings, including note update and note deletion.
+- Added contract checks for commands, HTTP paths, confirmations, documentation, and package release safety.
+
+### Changed
+
+- High-impact agent commands now need `--yes`.
+- The CLI version now matches the MCP and agent contract version.
+
 ---
 
 ## [0.12.0] - 2026-07-13
