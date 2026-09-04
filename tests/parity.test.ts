@@ -35,7 +35,7 @@ test("the Commander tree exposes every contract command mapping", () => {
     }
   }
   assert.equal(CLI_CAPABILITIES.length, 31);
-  assert.equal(VERSION, "3.1.0");
+  assert.equal(VERSION, "3.2.0");
 });
 
 test("transport commands have declared exemptions", () => {
@@ -62,6 +62,23 @@ test("all high-impact commands support --yes", () => {
   }
 });
 
+test("feedback close commands expose reason and note options", () => {
+  const program = createProgram();
+  for (const commandPath of [
+    "feedback create",
+    "feedback update",
+    "feedback bulk-update",
+  ]) {
+    let current = program;
+    for (const token of commandPath.split(" "))
+      current = findCommand(current, token)!;
+    assert.ok(
+      current.options.some((option) => option.long === "--close-reason"),
+    );
+    assert.ok(current.options.some((option) => option.long === "--close-note"));
+  }
+});
+
 test("the prepublish check rejects version and mapping drift", () => {
   assert.throws(
     () => verifyCliParity("2.9.9"),
@@ -70,7 +87,7 @@ test("the prepublish check rejects version and mapping drift", () => {
   assert.throws(
     () =>
       verifyCliParity(
-        "3.1.0",
+        "3.2.0",
         PRODUCT_OPERATIONS.slice(0, -1).map(({ id }) => id),
       ),
     /Expected values to be strictly deep-equal/,

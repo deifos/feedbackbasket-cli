@@ -30,7 +30,7 @@ The browser selects the organization, Read or Full access, and Selected projects
 
 The first time you log in, a setup wizard walks you through selecting a default project and installing the Claude Code skill.
 
-The CLI uses agent surface version `3.1.0`. CLI login accepts only private CLI credentials. It does not accept MCP keys or OAuth tokens. Use `--yes` for high-impact commands in agent or machine mode. Interactive use can show a confirmation prompt. Never put an access token, refresh token, CLI token, or MCP key in source, prompts, logs, generated configuration, or final output.
+The CLI uses agent surface version `3.2.0`. CLI login accepts only private CLI credentials. It does not accept MCP keys or OAuth tokens. Use `--yes` for high-impact commands in agent or machine mode. Interactive use can show a confirmation prompt. Never put an access token, refresh token, CLI token, or MCP key in source, prompts, logs, generated configuration, or final output.
 
 ## Agent Usage
 
@@ -57,7 +57,7 @@ feedbackbasket setup claude
 <!-- BEGIN GENERATED AGENT CAPABILITIES -->
 ## Agent capability contract
 
-Agent surface version: `3.1.0`. The CLI and both MCP transports implement the same 31 product operations.
+Agent surface version: `3.2.0`. The CLI and both MCP transports implement the same 31 product operations.
 
 | Product operation | CLI command | MCP tool | Required access | Confirm |
 | --- | --- | --- | --- | --- |
@@ -135,6 +135,7 @@ feedbackbasket feedback list --category BUG               # Filter by category
 feedbackbasket feedback list --status OPEN                # Filter by status
 feedbackbasket feedback list --sentiment NEGATIVE          # Filter by sentiment
 feedbackbasket feedback list --search "login issue"        # Text search
+feedbackbasket feedback list --status CLOSED --close-reason NOT_PLANNED
 feedbackbasket feedback show <id>                          # View detail, including attachment links
 feedbackbasket feedback search "crash on mobile"           # Search shortcut
 
@@ -142,6 +143,7 @@ feedbackbasket feedback search "crash on mobile"           # Search shortcut
 feedbackbasket feedback create "Title" --content "Body" --project myapp
 feedbackbasket feedback create "Login bug" --content "Clicking Log in does nothing" --project myapp --type bug --page-url https://example.com/login
 feedbackbasket feedback update <id> --status PLANNED       # Update status
+feedbackbasket feedback update <id> --status CLOSED --close-reason NOT_PLANNED
 feedbackbasket feedback update <id> --category BUG         # Update category
 feedbackbasket feedback reply <id> "Thanks!" --delivery email --reply-to support@example.com
 feedbackbasket feedback reply <id> "Thanks!" --delivery widget
@@ -150,7 +152,7 @@ feedbackbasket feedback reply <id> "Thanks!" --delivery both --reply-to support@
 feedbackbasket feedback replies <id>                       # Show the complete conversation
 feedbackbasket feedback note <id> "Investigating this..."  # Add internal note
 feedbackbasket feedback delete <id>                        # Delete feedback
-feedbackbasket feedback bulk-update --status CLOSED --ids id1,id2,id3
+feedbackbasket feedback bulk-update --status CLOSED --close-reason NOT_ACTIONABLE --ids id1,id2,id3
 
 # Export
 feedbackbasket feedback export myapp --format csv          # Export to CSV

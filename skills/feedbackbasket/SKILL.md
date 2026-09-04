@@ -7,7 +7,7 @@ description: Manage FeedbackBasket projects, feedback, bugs, website widgets, mo
 
 Full command-line interface for managing feedback, waitlist signups, bug reports, projects, widgets, and teams in FeedbackBasket. Works with any AI agent that can run shell commands.
 
-The unified agent surface version is `3.1.0`. It has 31 product operations. The CLI, stdio MCP package, and live Streamable HTTP MCP server implement the same contract.
+The unified agent surface version is `3.2.0`. It has 31 product operations. The CLI, stdio MCP package, and live Streamable HTTP MCP server implement the same contract.
 
 ## Authentication
 
@@ -39,7 +39,7 @@ Use the CLI when the agent has shell access and an existing CLI login. Use MCP w
 
 For remote MCP, add `https://feedbackbasket.com/.well-known/mcp` to the host. Save it, select **Authenticate**, sign in, select an organization, select Read or Full access, select Selected projects or All projects, and select **Allow**. Browser OAuth is the recommended remote setup. Do not ask the user to paste an OAuth token.
 
-For local STDIO MCP, CI, servers, or unattended automation, use `feedbackbasket-mcp-server@3.1.0` with an `fb_key_` credential from the host credential store or an environment variable. Browser OAuth is only for Streamable HTTP. STDIO still uses an environment credential. The CLI keeps `feedbackbasket login` and its private `fb_cli_` token flow in this release.
+For local STDIO MCP, CI, servers, or unattended automation, use `feedbackbasket-mcp-server@3.2.0` with an `fb_key_` credential from the host credential store or an environment variable. Browser OAuth is only for Streamable HTTP. STDIO still uses an environment credential. The CLI keeps `feedbackbasket login` and its private `fb_cli_` token flow in this release.
 
 Access tokens, refresh tokens, CLI tokens, and MCP keys are private and are not interchangeable. Never put a credential in source, command arguments, logs, prompts, snapshots, generated files, or final responses. Use browser OAuth, the host credential store, or an environment variable as applicable.
 
@@ -135,6 +135,7 @@ Treat a supplied project key as production unless the user explicitly confirms a
 # Read
 feedbackbasket feedback list --project <id> --category BUG --status OPEN --sentiment NEGATIVE
 feedbackbasket feedback list --search "login" --limit 50 --offset 0 --notes
+feedbackbasket feedback list --status CLOSED --close-reason NOT_PLANNED
 feedbackbasket feedback show <id>
 feedbackbasket feedback search "crash on mobile" --project <id> --limit 10
 
@@ -146,7 +147,9 @@ feedbackbasket feedback note <id> "Investigating — appears related to auth flo
 feedbackbasket feedback note update <id> <note-id> --content "Updated internal note"
 feedbackbasket feedback note delete <id> <note-id> --yes
 feedbackbasket feedback delete <id> --yes
-feedbackbasket feedback bulk-update --status CLOSED --ids id1,id2,id3 --yes
+feedbackbasket feedback update <id> --status CLOSED --close-reason NOT_PLANNED
+feedbackbasket feedback update <id> --status CLOSED --close-reason OTHER --close-note "Reason for closing"
+feedbackbasket feedback bulk-update --status CLOSED --close-reason NOT_ACTIONABLE --ids id1,id2,id3 --yes
 
 # Reply to submitter by email, widget/in-app thread, or both
 feedbackbasket feedback reply <id> "Thanks for reporting — we pushed a fix!" --delivery email --reply-to support@example.com --yes
@@ -391,12 +394,13 @@ feedbackbasket feedback search "crash" --category BUG --agent
 
 ## Filtering Options
 
-| Type         | Values                                                                 |
-| ------------ | ---------------------------------------------------------------------- |
-| Categories   | `BUG`, `FEATURE_REQUEST`, `IMPROVEMENT`, `QUESTION`                    |
-| Statuses     | `OPEN`, `UNDER_REVIEW`, `PLANNED`, `IN_PROGRESS`, `COMPLETE`, `CLOSED` |
-| Sentiments   | `POSITIVE`, `NEGATIVE`, `NEUTRAL`                                      |
-| Bug Severity | `high`, `medium`, `low`                                                |
+| Type          | Values                                                                                                     |
+| ------------- | ---------------------------------------------------------------------------------------------------------- |
+| Categories    | `BUG`, `FEATURE_REQUEST`, `IMPROVEMENT`, `QUESTION`                                                        |
+| Statuses      | `OPEN`, `UNDER_REVIEW`, `PLANNED`, `IN_PROGRESS`, `COMPLETE`, `CLOSED`                                     |
+| Close reasons | `DUPLICATE`, `NOT_PLANNED`, `COULD_NOT_REPRODUCE`, `NOT_ACTIONABLE`, `NO_LONGER_RELEVANT`, `SPAM`, `OTHER` |
+| Sentiments    | `POSITIVE`, `NEGATIVE`, `NEUTRAL`                                                                          |
+| Bug Severity  | `high`, `medium`, `low`                                                                                    |
 
 ## JSON Envelope
 
@@ -432,5 +436,6 @@ Errors include hints:
 - Project names resolve case-insensitively with fuzzy matching
 - Write operations use full scope (granted by default during login)
 - Feedback IDs are stable CUIDs — safe to reference across commands
+- Closing feedback requires `--close-reason`. The `OTHER` reason also requires `--close-note`.
 - All timestamps are ISO 8601
 - `--yes` confirms all high-impact CLI operations in agent or machine mode.

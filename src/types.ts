@@ -1,6 +1,7 @@
 // API response types — aligned with FeedbackBasket v3 REST API
 
 export type FeedbackStatus = 'OPEN' | 'UNDER_REVIEW' | 'PLANNED' | 'IN_PROGRESS' | 'COMPLETE' | 'CLOSED';
+export type FeedbackCloseReason = 'DUPLICATE' | 'NOT_PLANNED' | 'COULD_NOT_REPRODUCE' | 'NOT_ACTIONABLE' | 'NO_LONGER_RELEVANT' | 'SPAM' | 'OTHER';
 export type FeedbackCategory = 'BUG' | 'FEATURE_REQUEST' | 'IMPROVEMENT' | 'QUESTION';
 export type Sentiment = 'POSITIVE' | 'NEGATIVE' | 'NEUTRAL';
 export type Severity = 'high' | 'medium' | 'low';
@@ -102,6 +103,9 @@ export interface Feedback {
   content: string;
   email?: string | null;
   status: FeedbackStatus;
+  closeReason?: FeedbackCloseReason | null;
+  closeNote?: string | null;
+  closedAt?: string | null;
   category?: FeedbackCategory | null;
   sentiment?: Sentiment | null;
   aiSummary?: string | null;
@@ -202,6 +206,8 @@ export interface FeedbackCreateInput {
   type?: 'bug' | 'feature' | 'general';
   category?: FeedbackCategory;
   status?: FeedbackStatus;
+  closeReason?: FeedbackCloseReason;
+  closeNote?: string;
   email?: string;
   pageUrl?: string;
   metadata?: Record<string, unknown>;
@@ -248,6 +254,7 @@ export interface FeedbackParams {
   projectId?: string;
   category?: FeedbackCategory;
   status?: FeedbackStatus;
+  closeReason?: FeedbackCloseReason;
   sentiment?: Sentiment;
   search?: string;
   limit?: number;

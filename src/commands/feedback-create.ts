@@ -13,6 +13,7 @@ type FeedbackType = 'bug' | 'feature' | 'general';
 const validTypes = new Set(['bug', 'feature', 'general']);
 const validCategories = new Set(['BUG', 'FEATURE_REQUEST', 'IMPROVEMENT', 'QUESTION']);
 const validStatuses = new Set(['OPEN', 'UNDER_REVIEW', 'PLANNED', 'IN_PROGRESS', 'COMPLETE', 'CLOSED']);
+const validCloseReasons = new Set(['DUPLICATE', 'NOT_PLANNED', 'COULD_NOT_REPRODUCE', 'NOT_ACTIONABLE', 'NO_LONGER_RELEVANT', 'SPAM', 'OTHER']);
 
 export function createFeedbackCreateCommand(getWriter: () => OutputWriter): Command {
   return new Command('create')
@@ -23,6 +24,8 @@ export function createFeedbackCreateCommand(getWriter: () => OutputWriter): Comm
     .option('--type <type>', 'Feedback type (bug, feature, general)')
     .option('--category <category>', 'Category (BUG, FEATURE_REQUEST, IMPROVEMENT, QUESTION)')
     .option('--status <status>', 'Initial status (OPEN, UNDER_REVIEW, PLANNED, IN_PROGRESS, COMPLETE, CLOSED)')
+    .option('--close-reason <reason>', 'Reason when the initial status is CLOSED')
+    .option('--close-note <note>', 'Internal closure note; required when the reason is OTHER')
     .option('--email <email>', 'Submitter email')
     .option('--page-url <url>', 'Page URL where the feedback applies')
     .option('--metadata <key=value>', 'Metadata key/value pair (repeatable)', collectMetadata, [] as string[])
@@ -31,16 +34,22 @@ export function createFeedbackCreateCommand(getWriter: () => OutputWriter): Comm
       const client = requireClient();
 
       if (opts.type && !validTypes.has(opts.type)) {
-        throw errUsage(
-          'Invalid type. Must be one of: bug, feature, general',
-          'Example: feedbackbasket feedback create "Login is broken" --project myapp --type bug',
-        );
+        throw errUsage('Invalid type. Must be one of: bug, feature, general', 'Example: feedbackbasket feedback create "Login is broken" --project myapp --type bug');
       }
       if (opts.category && !validCategories.has(opts.category)) {
         throw errUsage('Invalid category. Must be one of: BUG, FEATURE_REQUEST, IMPROVEMENT, QUESTION');
       }
       if (opts.status && !validStatuses.has(opts.status)) {
         throw errUsage('Invalid status. Must be one of: OPEN, UNDER_REVIEW, PLANNED, IN_PROGRESS, COMPLETE, CLOSED');
+      }
+      if (opts.status === 'CLOSED' && !opts.closeReason) {
+        throw errUsage('--close-reason is required when status is CLOSED');
+      }
+      if (opts.closeReason && !validCloseReasons.has(opts.closeReason)) {
+        throw errUsage('Invalid close reason. Must be one of: DUPLICATE, NOT_PLANNED, COULD_NOT_REPRODUCE, NOT_ACTIONABLE, NO_LONGER_RELEVANT, SPAM, OTHER');
+      }
+      if (opts.closeReason === 'OTHER' && !opts.closeNote?.trim()) {
+        throw errUsage('--close-note is required when --close-reason is OTHER');
       }
 
       const project = await resolveProject(client, opts.project);
@@ -53,6 +62,8 @@ export function createFeedbackCreateCommand(getWriter: () => OutputWriter): Comm
         type: opts.type as FeedbackType | undefined,
         category: opts.category as FeedbackCategory | undefined,
         status: opts.status as FeedbackStatus | undefined,
+        closeReason: opts.closeReason,
+        closeNote: opts.closeNote,
         email: opts.email,
         pageUrl: opts.pageUrl,
         metadata,
@@ -68,9 +79,18 @@ export function createFeedbackCreateCommand(getWriter: () => OutputWriter): Comm
       writer.ok(result, {
         summary: `Created feedback ${result.id}`,
         breadcrumbs: [
-          { action: 'View feedback', cmd: `feedbackbasket feedback show ${result.id}` },
-          { action: 'Update status', cmd: `feedbackbasket feedback update ${result.id} --status UNDER_REVIEW` },
-          { action: 'List project feedback', cmd: `feedbackbasket feedback list --project ${project.id}` },
+          {
+            action: 'View feedback',
+            cmd: `feedbackbasket feedback show ${result.id}`,
+          },
+          {
+            action: 'Update status',
+            cmd: `feedbackbasket feedback update ${result.id} --status UNDER_REVIEW`,
+          },
+          {
+            action: 'List project feedback',
+            cmd: `feedbackbasket feedback list --project ${project.id}`,
+          },
         ],
       });
     });
@@ -110,10 +130,7 @@ function parseMetadata(entries: string[]): Record<string, unknown> | undefined {
   for (const entry of entries) {
     const separator = entry.indexOf('=');
     if (separator <= 0) {
-      throw errUsage(
-        `Invalid metadata "${entry}"`,
-        'Use --metadata key=value, for example --metadata source=codex',
-      );
+      throw errUsage(`Invalid metadata "${entry}"`, 'Use --metadata key=value, for example --metadata source=codex');
     }
 
     const key = entry.slice(0, separator).trim();

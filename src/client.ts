@@ -1,21 +1,6 @@
 import { USER_AGENT } from './version.js';
 import { CLIError, errAuth, errForbidden, errRateLimit, errNetwork, errAPI } from './output/errors.js';
-import type {
-  ProjectsResponse,
-  FeedbackResponse,
-  BugReportsResponse,
-  FeedbackParams,
-  FeedbackCreateInput,
-  FeedbackCreateResponse,
-  FeedbackReplyResponse,
-  BugReportParams,
-  UserProfile,
-  Project,
-  Feedback,
-  WidgetSettings,
-  WaitlistResponse,
-  MobileIntegrationResponse,
-} from './types.js';
+import type { ProjectsResponse, FeedbackResponse, BugReportsResponse, FeedbackParams, FeedbackCreateInput, FeedbackCreateResponse, FeedbackReplyResponse, BugReportParams, UserProfile, Project, Feedback, WidgetSettings, WaitlistResponse, MobileIntegrationResponse } from './types.js';
 
 export class FeedbackBasketClient {
   private readonly apiBaseUrl: string;
@@ -42,7 +27,15 @@ export class FeedbackBasketClient {
     return this.request<{ project: Project }>('POST', '/projects', data);
   }
 
-  async updateProject(id: string, data: { name?: string; url?: string; description?: string; replyToEmail?: string | null }): Promise<Project> {
+  async updateProject(
+    id: string,
+    data: {
+      name?: string;
+      url?: string;
+      description?: string;
+      replyToEmail?: string | null;
+    },
+  ): Promise<Project> {
     return this.request<Project>('PATCH', `/projects/${encodeURIComponent(id)}`, data);
   }
 
@@ -78,15 +71,32 @@ export class FeedbackBasketClient {
   }
 
   // Widget
-  async getWidgetSettings(projectId: string): Promise<{ projectId: string; projectName: string; settings: WidgetSettings }> {
+  async getWidgetSettings(projectId: string): Promise<{
+    projectId: string;
+    projectName: string;
+    settings: WidgetSettings;
+  }> {
     return this.request('GET', `/projects/${encodeURIComponent(projectId)}/widget`);
   }
 
-  async updateWidgetSettings(projectId: string, settings: Partial<WidgetSettings>): Promise<{ projectId: string; projectName: string; settings: WidgetSettings }> {
+  async updateWidgetSettings(
+    projectId: string,
+    settings: Partial<WidgetSettings>,
+  ): Promise<{
+    projectId: string;
+    projectName: string;
+    settings: WidgetSettings;
+  }> {
     return this.request('PATCH', `/projects/${encodeURIComponent(projectId)}/widget`, settings);
   }
 
-  async getWidgetScript(projectId: string): Promise<{ projectId: string; projectName: string; captureMode: 'feedback' | 'waitlist'; embedCode: string; scriptUrl: string }> {
+  async getWidgetScript(projectId: string): Promise<{
+    projectId: string;
+    projectName: string;
+    captureMode: 'feedback' | 'waitlist';
+    embedCode: string;
+    scriptUrl: string;
+  }> {
     return this.request('GET', `/projects/${encodeURIComponent(projectId)}/widget-script`);
   }
 
@@ -98,7 +108,12 @@ export class FeedbackBasketClient {
 
   async updateMobileIntegration(
     projectId: string,
-    data: { enabled?: boolean; allowVisitorReplies?: boolean; addBundleIds?: string[]; removeBundleIds?: string[] },
+    data: {
+      enabled?: boolean;
+      allowVisitorReplies?: boolean;
+      addBundleIds?: string[];
+      removeBundleIds?: string[];
+    },
     includePublishableKey = false,
   ): Promise<MobileIntegrationResponse> {
     const query = includePublishableKey ? '?includePublishableKey=true' : '';
@@ -121,7 +136,16 @@ export class FeedbackBasketClient {
   }
 
   // Write operations
-  async updateFeedback(id: string, data: { status?: string; category?: string; sentiment?: string }): Promise<Feedback> {
+  async updateFeedback(
+    id: string,
+    data: {
+      status?: string;
+      category?: string;
+      sentiment?: string;
+      closeReason?: string;
+      closeNote?: string;
+    },
+  ): Promise<Feedback> {
     return this.request<Feedback>('PATCH', `/feedback/${encodeURIComponent(id)}`, data);
   }
 
@@ -129,15 +153,36 @@ export class FeedbackBasketClient {
     return this.request('POST', `/feedback/${encodeURIComponent(feedbackId)}/notes`, { content });
   }
 
-  async sendReply(feedbackId: string, content: string, opts: { replyToEmail?: string; destinations?: Array<'email' | 'widget'> } = {}): Promise<FeedbackReplyResponse> {
-    const body: { content: string; replyToEmail?: string; destinations?: Array<'email' | 'widget'> } = { content };
+  async sendReply(
+    feedbackId: string,
+    content: string,
+    opts: {
+      replyToEmail?: string;
+      destinations?: Array<'email' | 'widget'>;
+    } = {},
+  ): Promise<FeedbackReplyResponse> {
+    const body: {
+      content: string;
+      replyToEmail?: string;
+      destinations?: Array<'email' | 'widget'>;
+    } = { content };
     if (opts.destinations) body.destinations = opts.destinations;
     const replyToEmail = opts.replyToEmail;
     if (replyToEmail) body['replyToEmail'] = replyToEmail;
     return this.request('POST', `/feedback/${encodeURIComponent(feedbackId)}/replies`, body);
   }
 
-  async listReplies(feedbackId: string): Promise<{ replies: Array<{ id: string; content: string; replyToEmail: string; sentBy: string; createdAt: string }>; messages?: NonNullable<FeedbackReplyResponse['message']>[]; total: number }> {
+  async listReplies(feedbackId: string): Promise<{
+    replies: Array<{
+      id: string;
+      content: string;
+      replyToEmail: string;
+      sentBy: string;
+      createdAt: string;
+    }>;
+    messages?: NonNullable<FeedbackReplyResponse['message']>[];
+    total: number;
+  }> {
     return this.request('GET', `/feedback/${encodeURIComponent(feedbackId)}/replies`);
   }
 
@@ -145,8 +190,12 @@ export class FeedbackBasketClient {
     return this.request('DELETE', `/feedback/${encodeURIComponent(id)}`);
   }
 
-  async bulkUpdateStatus(ids: string[], status: string): Promise<{ updated: number; status: string }> {
-    return this.request('POST', '/feedback/bulk-update', { ids, status });
+  async bulkUpdateStatus(ids: string[], status: string, closure: { closeReason?: string; closeNote?: string } = {}): Promise<{ updated: number; status: string; closeReason?: string | null }> {
+    return this.request('POST', '/feedback/bulk-update', {
+      ids,
+      status,
+      ...closure,
+    });
   }
 
   async updateNote(feedbackId: string, noteId: string, content: string): Promise<{ id: string; content: string; createdAt: string }> {
@@ -163,15 +212,32 @@ export class FeedbackBasketClient {
   }
 
   // Team
-  async listTeam(): Promise<{ members: Array<{ memberId: string; userId: string; name: string; email: string; role: string; joinedAt: string }>; totalMembers: number }> {
+  async listTeam(): Promise<{
+    members: Array<{
+      memberId: string;
+      userId: string;
+      name: string;
+      email: string;
+      role: string;
+      joinedAt: string;
+    }>;
+    totalMembers: number;
+  }> {
     return this.request('GET', '/team');
   }
 
   async updateMemberRole(memberId: string, role: string): Promise<{ memberId: string; name: string; email: string; role: string }> {
-    return this.request('PATCH', `/team/${encodeURIComponent(memberId)}`, { role });
+    return this.request('PATCH', `/team/${encodeURIComponent(memberId)}`, {
+      role,
+    });
   }
 
-  async removeMember(memberId: string): Promise<{ removed: boolean; memberId: string; name: string; email: string }> {
+  async removeMember(memberId: string): Promise<{
+    removed: boolean;
+    memberId: string;
+    name: string;
+    email: string;
+  }> {
     return this.request('DELETE', `/team/${encodeURIComponent(memberId)}`);
   }
 
@@ -184,7 +250,7 @@ export class FeedbackBasketClient {
         method,
         signal: controller.signal,
         headers: {
-          'Authorization': `Bearer ${this.token}`,
+          Authorization: `Bearer ${this.token}`,
           'Content-Type': 'application/json',
           'User-Agent': USER_AGENT,
         },
@@ -192,18 +258,21 @@ export class FeedbackBasketClient {
       });
 
       const contentType = response.headers.get('content-type') ?? '';
-      const payload: unknown = contentType.includes('application/json')
-        ? await response.json().catch(() => null)
-        : await response.text();
+      const payload: unknown = contentType.includes('application/json') ? await response.json().catch(() => null) : await response.text();
 
       if (!response.ok) {
         const message = getErrorMessage(payload, response.statusText);
         switch (response.status) {
-          case 401: throw errAuth(message);
-          case 403: throw errForbidden(message);
-          case 404: throw errAPI(404, message);
-          case 429: throw errRateLimit();
-          default: throw errAPI(response.status, message);
+          case 401:
+            throw errAuth(message);
+          case 403:
+            throw errForbidden(message);
+          case 404:
+            throw errAPI(404, message);
+          case 429:
+            throw errRateLimit();
+          default:
+            throw errAPI(response.status, message);
         }
       }
 

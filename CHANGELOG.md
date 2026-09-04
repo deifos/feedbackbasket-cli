@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+## [3.2.0] - 2026-09-04
+
+### Added
+
+- Added structured close reasons and optional internal close notes to feedback create, update, bulk update, list, and show commands.
+
+### Changed
+
+- Closing feedback now requires `--close-reason`. The `OTHER` reason also requires `--close-note`.
+- The CLI and both MCP transports now use agent surface version `3.2.0`.
+
 ## [3.1.0] - 2026-08-22
 
 ### Added

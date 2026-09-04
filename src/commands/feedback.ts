@@ -6,7 +6,7 @@ import { errAuth } from '../output/errors.js';
 import { brand } from '../output/theme.js';
 import { resolveProject } from '../resolve.js';
 import type { OutputWriter } from '../output/writer.js';
-import type { Feedback, FeedbackCategory, FeedbackStatus, Sentiment } from '../types.js';
+import type { Feedback, FeedbackCategory, FeedbackCloseReason, FeedbackStatus, Sentiment } from '../types.js';
 
 async function resolveProjectId(client: FeedbackBasketClient, optProject?: string, all?: boolean): Promise<string | undefined> {
   if (all) return undefined;
@@ -26,8 +26,7 @@ import { createFeedbackExportCommand } from './feedback-export.js';
 import { createFeedbackReplyCommand, createFeedbackRepliesCommand } from './feedback-reply.js';
 
 export function createFeedbackCommand(getWriter: () => OutputWriter): Command {
-  const feedback = new Command('feedback')
-    .description('View and manage feedback');
+  const feedback = new Command('feedback').description('View and manage feedback');
 
   // Write subcommands
   feedback.addCommand(createFeedbackCreateCommand(getWriter));
@@ -47,6 +46,7 @@ export function createFeedbackCommand(getWriter: () => OutputWriter): Command {
     .option('--all', 'Show feedback across all projects (ignore default project)')
     .option('--category <category>', 'Filter by category (BUG, FEATURE_REQUEST, IMPROVEMENT, QUESTION)')
     .option('--status <status>', 'Filter by status (OPEN, UNDER_REVIEW, PLANNED, IN_PROGRESS, COMPLETE, CLOSED)')
+    .option('--close-reason <reason>', 'Filter by close reason')
     .option('--sentiment <sentiment>', 'Filter by sentiment (POSITIVE, NEGATIVE, NEUTRAL)')
     .option('--search <query>', 'Search feedback content')
     .option('--limit <n>', 'Max results (1-100)', '20')
@@ -60,6 +60,7 @@ export function createFeedbackCommand(getWriter: () => OutputWriter): Command {
         projectId: await resolveProjectId(client, opts.project, opts.all),
         category: opts.category as FeedbackCategory | undefined,
         status: opts.status as FeedbackStatus | undefined,
+        closeReason: opts.closeReason as FeedbackCloseReason | undefined,
         sentiment: opts.sentiment as Sentiment | undefined,
         search: opts.search,
         limit: parseInt(opts.limit, 10),
@@ -73,13 +74,22 @@ export function createFeedbackCommand(getWriter: () => OutputWriter): Command {
 
       const breadcrumbs = [];
       if (opts.project) {
-        breadcrumbs.push({ action: 'View bugs for this project', cmd: `feedbackbasket bugs list --project ${opts.project}` });
+        breadcrumbs.push({
+          action: 'View bugs for this project',
+          cmd: `feedbackbasket bugs list --project ${opts.project}`,
+        });
       }
       if (result.pagination.hasMore) {
         const nextOffset = parseInt(opts.offset, 10) + parseInt(opts.limit, 10);
-        breadcrumbs.push({ action: 'Next page', cmd: `feedbackbasket feedback list --offset ${nextOffset} --limit ${opts.limit}${opts.project ? ` --project ${opts.project}` : ''}` });
+        breadcrumbs.push({
+          action: 'Next page',
+          cmd: `feedbackbasket feedback list --offset ${nextOffset} --limit ${opts.limit}${opts.project ? ` --project ${opts.project}` : ''}`,
+        });
       }
-      breadcrumbs.push({ action: 'Search', cmd: 'feedbackbasket feedback search "<query>"' });
+      breadcrumbs.push({
+        action: 'Search',
+        cmd: 'feedbackbasket feedback search "<query>"',
+      });
 
       writer.ok(result.feedback, {
         summary: `Showing ${result.feedback.length} of ${result.pagination.totalCount} feedback items`,
@@ -105,8 +115,14 @@ export function createFeedbackCommand(getWriter: () => OutputWriter): Command {
       writer.ok(item, {
         summary: `Feedback ${item.id}`,
         breadcrumbs: [
-          { action: 'Update status', cmd: `feedbackbasket feedback update ${item.id} --status <STATUS>` },
-          { action: 'Add note', cmd: `feedbackbasket feedback note ${item.id} "<note>"` },
+          {
+            action: 'Update status',
+            cmd: `feedbackbasket feedback update ${item.id} --status <STATUS>`,
+          },
+          {
+            action: 'Add note',
+            cmd: `feedbackbasket feedback note ${item.id} "<note>"`,
+          },
           { action: 'Back to list', cmd: 'feedbackbasket feedback list' },
         ],
       });
@@ -137,7 +153,10 @@ export function createFeedbackCommand(getWriter: () => OutputWriter): Command {
         summary: `${result.pagination.totalCount} result${result.pagination.totalCount === 1 ? '' : 's'} for "${query}"`,
         breadcrumbs: [
           { action: 'List all feedback', cmd: 'feedbackbasket feedback list' },
-          { action: 'Search bugs', cmd: `feedbackbasket bugs list --search "${query}"` },
+          {
+            action: 'Search bugs',
+            cmd: `feedbackbasket bugs list --search "${query}"`,
+          },
         ],
       });
     });
@@ -174,7 +193,7 @@ function renderFeedbackList(items: Feedback[]): void {
     const cat = categoryEmoji[item.category ?? ''] ?? brand.muted('[?]');
     const priority = priorityLabel(item.aiPriorityScore);
     const content = item.content.length > 80 ? item.content.slice(0, 77) + '...' : item.content;
-    const status = brand.muted(`[${item.status}]`);
+    const status = brand.muted(`[${item.status}${item.closeReason ? ` · ${item.closeReason}` : ''}]`);
 
     const proj = item.project ? brand.primary(item.project.name) : '';
     console.log(`${cat} ${priority} ${status} ${proj} ${brand.muted(item.id)}`);
@@ -196,6 +215,8 @@ function renderFeedbackDetail(item: Feedback): void {
 
   const fields: [string, string | null | undefined][] = [
     ['Status', item.status],
+    ['Close Reason', item.closeReason],
+    ['Close Note', item.closeNote],
     ['Category', item.category],
     ['Feedback Type', formatFeedbackType(item)],
     ['Sentiment', item.sentiment],
