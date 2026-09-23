@@ -35,7 +35,8 @@ const source = fs.readFileSync(readmePath, 'utf8');
 const start = source.indexOf(START);
 const end = source.indexOf(END);
 assert.ok(start >= 0 && end > start, 'README capability markers are missing.');
-const expected = source.slice(0, start) + capabilityTable() + source.slice(end + END.length);
+const newline = source.includes('\r\n') ? '\r\n' : '\n';
+const expected = source.slice(0, start) + capabilityTable().replace(/\n/g, newline) + source.slice(end + END.length);
 if (process.argv.includes('--check')) {
   assert.equal(source, expected, 'README capability table is stale. Run npm run docs:generate.');
 } else {

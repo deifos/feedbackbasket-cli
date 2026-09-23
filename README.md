@@ -30,7 +30,7 @@ The browser selects the organization, Read or Full access, and Selected projects
 
 The first time you log in, a setup wizard walks you through selecting a default project and installing the Claude Code skill.
 
-The CLI uses agent surface version `3.2.0`. CLI login accepts only private CLI credentials. It does not accept MCP keys or OAuth tokens. Use `--yes` for high-impact commands in agent or machine mode. Interactive use can show a confirmation prompt. Never put an access token, refresh token, CLI token, or MCP key in source, prompts, logs, generated configuration, or final output.
+The CLI uses agent surface version `3.3.0`. CLI login accepts only private CLI credentials. It does not accept MCP keys or OAuth tokens. Use `--yes` for high-impact commands in agent or machine mode. Interactive use can show a confirmation prompt. Never put an access token, refresh token, CLI token, or MCP key in source, prompts, logs, generated configuration, or final output.
 
 ## Agent Usage
 
@@ -57,7 +57,7 @@ feedbackbasket setup claude
 <!-- BEGIN GENERATED AGENT CAPABILITIES -->
 ## Agent capability contract
 
-Agent surface version: `3.2.0`. The CLI and both MCP transports implement the same 31 product operations.
+Agent surface version: `3.3.0`. The CLI and both MCP transports implement the same 33 product operations.
 
 | Product operation | CLI command | MCP tool | Required access | Confirm |
 | --- | --- | --- | --- | --- |
@@ -91,6 +91,8 @@ Agent surface version: `3.2.0`. The CLI and both MCP transports implement the sa
 | `waitlist.export` | `waitlist export` | `export_waitlist` | `read:feedback; allowed project` | No |
 | `team.list` | `team list` | `list_team_members` | `write:team; unrestricted key` | No |
 | `team.updateRole` | `team role` | `update_team_member_role` | `write:team; unrestricted key` | Yes |
+| `team.updateAccess` | `team access` | `update_team_member_access` | `write:team; unrestricted key` | Yes |
+| `team.invite` | `team invite` | `invite_team_members` | `write:team; unrestricted key` | Yes |
 | `team.remove` | `team remove` | `remove_team_member` | `write:team; unrestricted key` | Yes |
 <!-- END GENERATED AGENT CAPABILITIES -->
 

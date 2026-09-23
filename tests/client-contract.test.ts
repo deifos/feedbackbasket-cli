@@ -46,7 +46,9 @@ test('every product operation uses its contract HTTP method and path', async () 
     await client.exportWaitlist('project');
     await client.listTeam();
     await client.updateMemberRole('member', 'admin');
-    await client.removeMember('member');
+    await client.updateMemberAccess('member', 'SELECTED', ['project']);
+  await client.inviteMembers(['member@example.test'], 'member', 'SELECTED', ['project']);
+  await client.removeMember('member');
   } finally {
     globalThis.fetch = originalFetch;
   }

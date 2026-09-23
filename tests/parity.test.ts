@@ -34,8 +34,8 @@ test("the Commander tree exposes every contract command mapping", () => {
       );
     }
   }
-  assert.equal(CLI_CAPABILITIES.length, 31);
-  assert.equal(VERSION, "3.2.0");
+  assert.equal(CLI_CAPABILITIES.length, 33);
+  assert.equal(VERSION, "3.3.0");
 });
 
 test("transport commands have declared exemptions", () => {
@@ -87,7 +87,7 @@ test("the prepublish check rejects version and mapping drift", () => {
   assert.throws(
     () =>
       verifyCliParity(
-        "3.2.0",
+        "3.3.0",
         PRODUCT_OPERATIONS.slice(0, -1).map(({ id }) => id),
       ),
     /Expected values to be strictly deep-equal/,

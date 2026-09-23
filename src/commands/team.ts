@@ -100,6 +100,33 @@ export function createTeamCommand(getWriter: () => OutputWriter): Command {
       });
     });
 
+  team.command('access <memberId>')
+    .description('Set member project access; owners and admins have all projects')
+    .requiredOption('--access <mode>', 'all or selected')
+    .option('--projects <ids>', 'Comma-separated project IDs; empty selected access removes all projects')
+    .option('--yes', 'Confirm the access change')
+    .action(async (memberId, opts) => {
+      const writer = getWriter();
+      const selection = projectSelection(opts);
+      await requireHighImpactConfirmation(writer, Boolean(opts.yes), `Change project access for ${memberId}?`, '--yes is required to change project access in machine mode.');
+      writer.ok(await requireClient().updateMemberAccess(memberId, selection.accessMode, selection.projectIds), { summary: 'Project access updated' });
+    });
+
+  team.command('invite <emails>')
+    .description('Send invitations to comma-separated email addresses')
+    .option('--role <role>', 'admin or member', 'member')
+    .requiredOption('--access <mode>', 'all or selected')
+    .option('--projects <ids>', 'Comma-separated project IDs')
+    .option('--yes', 'Confirm sending invitations')
+    .action(async (emails, opts) => {
+      const writer = getWriter();
+      const selection = projectSelection(opts);
+      if (!['admin', 'member'].includes(opts.role)) throw errUsage('Role must be admin or member');
+      if (opts.role === 'admin' && selection.accessMode !== 'ALL') throw errUsage('Admins must have all-project access');
+      await requireHighImpactConfirmation(writer, Boolean(opts.yes), `Send team invitations to ${emails}?`, '--yes is required to send invitations in machine mode.');
+      writer.ok(await requireClient().inviteMembers(emails.split(',').map((email: string) => email.trim()), opts.role, selection.accessMode, selection.projectIds), { summary: 'Invitation results' });
+    });
+
   return team;
 }
 
@@ -137,4 +164,11 @@ function renderTeamTable(members: Array<{ memberId: string; name: string; email:
     ].join('  ');
     console.log(row);
   }
+}
+
+function projectSelection(opts: { access: string; projects?: string }) {
+  if (!['all', 'selected'].includes(opts.access)) throw errUsage('Access must be all or selected');
+  const projectIds = [...new Set((opts.projects ?? '').split(',').map((id) => id.trim()).filter(Boolean))];
+  if (opts.access === 'all' && projectIds.length) throw errUsage('Do not specify projects with all access');
+  return { accessMode: opts.access.toUpperCase(), projectIds };
 }

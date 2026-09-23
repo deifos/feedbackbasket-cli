@@ -7,7 +7,7 @@ description: Manage FeedbackBasket projects, feedback, bugs, website widgets, mo
 
 Full command-line interface for managing feedback, waitlist signups, bug reports, projects, widgets, and teams in FeedbackBasket. Works with any AI agent that can run shell commands.
 
-The unified agent surface version is `3.2.0`. It has 31 product operations. The CLI, stdio MCP package, and live Streamable HTTP MCP server implement the same contract.
+The unified agent surface version is `3.3.0`. It has 33 product operations. The CLI, stdio MCP package, and live Streamable HTTP MCP server implement the same contract.
 
 ## Authentication
 
@@ -39,13 +39,13 @@ Use the CLI when the agent has shell access and an existing CLI login. Use MCP w
 
 For remote MCP, add `https://feedbackbasket.com/.well-known/mcp` to the host. Save it, select **Authenticate**, sign in, select an organization, select Read or Full access, select Selected projects or All projects, and select **Allow**. Browser OAuth is the recommended remote setup. Do not ask the user to paste an OAuth token.
 
-For local STDIO MCP, CI, servers, or unattended automation, use `feedbackbasket-mcp-server@3.2.0` with an `fb_key_` credential from the host credential store or an environment variable. Browser OAuth is only for Streamable HTTP. STDIO still uses an environment credential. The CLI keeps `feedbackbasket login` and its private `fb_cli_` token flow in this release.
+For local STDIO MCP, CI, servers, or unattended automation, use `feedbackbasket-mcp-server@3.3.0` with an `fb_key_` credential from the host credential store or an environment variable. Browser OAuth is only for Streamable HTTP. STDIO still uses an environment credential. The CLI keeps `feedbackbasket login` and its private `fb_cli_` token flow in this release.
 
 Access tokens, refresh tokens, CLI tokens, and MCP keys are private and are not interchangeable. Never put a credential in source, command arguments, logs, prompts, snapshots, generated files, or final responses. Use browser OAuth, the host credential store, or an environment variable as applicable.
 
 Read credentials can use read operations only. Full credentials can use writes that their scopes permit. A Selected-projects credential can access only its approved projects. Project creation and team operations need Full access and All projects. Existing unrestricted full keys remain compatible. New browser grants never get All-projects access without an explicit choice. If a write is denied, do not try a different security path. Ask the user for the required access.
 
-High-impact operations need explicit approval. MCP calls must include `confirm: true`. CLI agent or machine commands must include `--yes`. These rules apply to project deletion, feedback deletion, bulk feedback updates, note deletion, replies, mobile key rotation, team role changes, and team removal.
+High-impact operations need explicit approval. MCP calls must include `confirm: true`. CLI agent or machine commands must include `--yes`. These rules apply to project deletion, feedback deletion, bulk feedback updates, note deletion, replies, mobile key rotation, team role changes, project access changes, team invitations, and team removal.
 
 ## Quick Reference
 
@@ -434,8 +434,22 @@ Errors include hints:
 - `--agent` suppresses interactive prompts. High-impact operations still need `--yes`.
 - Default project (set during login) is used when `--project` is not specified
 - Project names resolve case-insensitively with fuzzy matching
-- Write operations use full scope (granted by default during login)
+- Write operations require Full access, explicitly selected by an owner or admin during login. Read is the default.
 - Feedback IDs are stable CUIDs — safe to reference across commands
 - Closing feedback requires `--close-reason`. The `OTHER` reason also requires `--close-note`.
 - All timestamps are ISO 8601
 - `--yes` confirms all high-impact CLI operations in agent or machine mode.
+
+## Team project access
+
+Owners and admins have access to all current and future projects. Members can have ALL or SELECTED project access. An empty SELECTED list removes all project access. New projects require an explicit grant for members with SELECTED access. Existing members keep their previous all-project access until changed.
+
+Use an unrestricted full key owned by an owner or admin for team changes. Team invitations require a plan with team collaboration. Read `list_team_members` or `feedbackbasket team list --agent` to inspect `accessMode` and `projectIds`. Resolve project IDs before changing access. Invitation email links open an acceptance page. The recipient signs in with the invited email address and selects Accept invitation.
+
+- CLI: `feedbackbasket team access <memberId> --access selected --projects <projectId1>,<projectId2> --yes`
+- CLI: `feedbackbasket team access <memberId> --access all --yes`
+- CLI: `feedbackbasket team invite person@example.com --role member --access selected --projects <projectId> --yes`
+- MCP: `update_team_member_access` with `memberId`, `accessMode`, `projectIds`, and `confirm: true`.
+- MCP: `invite_team_members` with `emails`, `role`, `accessMode`, `projectIds`, and `confirm: true`.
+
+ALL access requires an empty `projectIds` array. Admin invitations require ALL access. Do not change a role to bypass a project restriction. Existing CLI tokens, API keys, and OAuth grants are limited by the member's current project access on each request. A stored all-project credential does not override selected membership access. Removed or banned credential owners have no project access. Public boards and visitor submission endpoints remain public as configured.

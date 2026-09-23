@@ -226,6 +226,14 @@ export class FeedbackBasketClient {
     return this.request('GET', '/team');
   }
 
+  async updateMemberAccess(memberId: string, accessMode: string, projectIds: string[]): Promise<{ memberId: string; accessMode: string; projectIds: string[] }> {
+    return this.request('PATCH', `/team/${encodeURIComponent(memberId)}/access`, { accessMode, projectIds });
+  }
+
+  async inviteMembers(emails: string[], role: string, accessMode: string, projectIds: string[]): Promise<{ results: Array<{ email: string; status: string; error?: string }> }> {
+    return this.request('POST', '/team/invitations', { emails, role, accessMode, projectIds });
+  }
+
   async updateMemberRole(memberId: string, role: string): Promise<{ memberId: string; name: string; email: string; role: string }> {
     return this.request('PATCH', `/team/${encodeURIComponent(memberId)}`, {
       role,
