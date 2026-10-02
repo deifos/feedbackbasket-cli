@@ -1,6 +1,6 @@
 import { USER_AGENT } from './version.js';
 import { CLIError, errAuth, errForbidden, errRateLimit, errNetwork, errAPI } from './output/errors.js';
-import type { ProjectsResponse, FeedbackResponse, BugReportsResponse, FeedbackParams, FeedbackCreateInput, FeedbackCreateResponse, FeedbackReplyResponse, BugReportParams, UserProfile, Project, Feedback, WidgetSettings, WaitlistResponse, MobileIntegrationResponse } from './types.js';
+import type { ProjectsResponse, FeedbackResponse, BugReportsResponse, FeedbackParams, FeedbackCreateInput, FeedbackCreateResponse, FeedbackReplyResponse, BugReportParams, UserProfile, Project, Feedback, WidgetSettings, WaitlistResponse, MobileIntegrationResponse, Theme, ThemeDetail, GithubStatus, GithubIssueTarget, GithubIssueDraftResult, GithubIssueRef, GithubDraft, GithubAutomation } from './types.js';
 
 export class FeedbackBasketClient {
   private readonly apiBaseUrl: string;
@@ -247,6 +247,48 @@ export class FeedbackBasketClient {
     email: string;
   }> {
     return this.request('DELETE', `/team/${encodeURIComponent(memberId)}`);
+  }
+
+  // Themes
+  async listThemes(projectId: string, params: { minReports?: number; limit?: number } = {}): Promise<{ themes: Theme[] }> {
+    const query = new URLSearchParams();
+    if (params.minReports !== undefined) query.set('minReports', String(params.minReports));
+    if (params.limit !== undefined) query.set('limit', String(params.limit));
+    const suffix = query.toString() ? `?${query.toString()}` : '';
+    return this.request('GET', `/projects/${encodeURIComponent(projectId)}/themes${suffix}`);
+  }
+
+  async getTheme(projectId: string, themeId: string): Promise<ThemeDetail> {
+    return this.request('GET', `/projects/${encodeURIComponent(projectId)}/themes/${encodeURIComponent(themeId)}`);
+  }
+
+  // GitHub issues
+  async getGithubStatus(projectId: string): Promise<GithubStatus> {
+    return this.request('GET', `/projects/${encodeURIComponent(projectId)}/github`);
+  }
+
+  async draftGithubIssue(projectId: string, target: GithubIssueTarget): Promise<GithubIssueDraftResult> {
+    return this.request('POST', `/projects/${encodeURIComponent(projectId)}/github/issues/draft`, target);
+  }
+
+  async createGithubIssue(projectId: string, input: GithubIssueTarget & { title: string; body: string }): Promise<{ issue: GithubIssueRef }> {
+    return this.request('POST', `/projects/${encodeURIComponent(projectId)}/github/issues`, input);
+  }
+
+  async listGithubDrafts(projectId: string): Promise<{ drafts: GithubDraft[] }> {
+    return this.request('GET', `/projects/${encodeURIComponent(projectId)}/github/drafts`);
+  }
+
+  async approveGithubDraft(projectId: string, draftId: string, edits: { title?: string; body?: string } = {}): Promise<{ issue: GithubIssueRef }> {
+    return this.request('POST', `/projects/${encodeURIComponent(projectId)}/github/drafts/${encodeURIComponent(draftId)}/approve`, edits);
+  }
+
+  async rejectGithubDraft(projectId: string, draftId: string): Promise<{ rejected: boolean }> {
+    return this.request('POST', `/projects/${encodeURIComponent(projectId)}/github/drafts/${encodeURIComponent(draftId)}/reject`, {});
+  }
+
+  async updateGithubAutomation(projectId: string, settings: Partial<GithubAutomation>): Promise<{ automation: GithubAutomation }> {
+    return this.request('PATCH', `/projects/${encodeURIComponent(projectId)}/github/automation`, settings);
   }
 
   private async request<T>(method: string, path: string, data?: unknown): Promise<T> {

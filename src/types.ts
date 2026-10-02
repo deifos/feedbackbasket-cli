@@ -279,3 +279,62 @@ export interface UserProfile {
   organizationId: string;
   organizationName: string;
 }
+
+export interface GithubIssueRef {
+  issueNumber: number;
+  issueUrl: string;
+  state: string;
+}
+
+export interface Theme {
+  id: string;
+  title: string | null;
+  summary: string | null;
+  reportCount: number;
+  firstSeenAt: string;
+  lastSeenAt: string;
+  githubIssue: { number: number; url: string; state: string } | null;
+}
+
+export interface ThemeDetail extends Theme {
+  feedback: Array<{ id: string; content: string; status: string; category: string | null; createdAt: string }>;
+}
+
+export interface GithubAutomation {
+  mode: 'off' | 'approval' | 'auto';
+  categories: Array<'BUG' | 'FEATURE_REQUEST' | 'IMPROVEMENT'>;
+  minConfidence: number;
+  bugMinReports: number;
+  otherMinReports: number;
+  dailyCap: number;
+  closeLoop: boolean;
+}
+
+export interface GithubStatus {
+  available: boolean;
+  configured: boolean;
+  connectedAccounts: number;
+  repository: string | null;
+  automation: GithubAutomation | null;
+  pendingDrafts: number;
+}
+
+export interface GithubIssueTarget {
+  themeId?: string;
+  feedbackId?: string;
+}
+
+export interface GithubIssueDraftResult {
+  title: string;
+  body: string;
+  existing: GithubIssueRef | null;
+}
+
+export interface GithubDraft {
+  id: string;
+  title: string;
+  body: string;
+  themeId: string | null;
+  feedbackId: string | null;
+  createdAt: string;
+}

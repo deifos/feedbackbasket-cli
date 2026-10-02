@@ -13,6 +13,8 @@ import { createWidgetCommand } from './commands/widget.js';
 import { createTeamCommand } from './commands/team.js';
 import { createWaitlistCommand } from './commands/waitlist.js';
 import { createMobileCommand } from './commands/mobile.js';
+import { createThemesCommand } from './commands/themes.js';
+import { createGithubCommand } from './commands/github.js';
 import { renderRootHelp } from './help.js';
 
 let writer: OutputWriter;
@@ -69,6 +71,8 @@ export function createProgram(): Command {
   program.addCommand(createWidgetCommand(getWriter));
   program.addCommand(createWaitlistCommand(getWriter));
   program.addCommand(createMobileCommand(getWriter));
+  program.addCommand(createThemesCommand(getWriter));
+  program.addCommand(createGithubCommand(getWriter));
   program.addCommand(createTeamCommand(getWriter));
   program.addCommand(createDoctorCommand(getWriter));
   program.addCommand(createSetupCommand(getWriter));

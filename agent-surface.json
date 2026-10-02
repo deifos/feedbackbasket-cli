@@ -1,5 +1,5 @@
 {
-  "version": "3.3.0",
+  "version": "3.4.0",
   "operationIds": [
     "projects.list",
     "projects.get",
@@ -33,6 +33,15 @@
     "team.updateRole",
     "team.updateAccess",
     "team.invite",
-    "team.remove"
+    "team.remove",
+    "themes.list",
+    "themes.get",
+    "github.status",
+    "github.draftIssue",
+    "github.createIssue",
+    "github.listDrafts",
+    "github.approveDraft",
+    "github.rejectDraft",
+    "github.updateAutomation"
   ]
 }

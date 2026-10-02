@@ -31,6 +31,8 @@ export function renderRootHelp(): string {
   lines.push(cmd('projects', 'Manage projects (create, show, update, delete)'));
   lines.push(cmd('feedback', 'View and manage feedback'));
   lines.push(cmd('bugs', 'View bug reports with severity'));
+  lines.push(cmd('themes', 'See what several people reported (grouped feedback)'));
+  lines.push(cmd('github', 'Turn feedback into GitHub issues, review drafts, set automation'));
   lines.push(cmd('widget', 'Manage feedback widget & get embed code'));
   lines.push(cmd('waitlist', 'View and export waitlist signups'));
   lines.push(cmd('mobile', 'Set up and verify mobile app feedback'));
@@ -75,6 +77,8 @@ export function renderRootHelp(): string {
   lines.push(`${INDENT}${brand.muted('$')} feedbackbasket feedback create "Login bug" --project myapp --type bug`);
   lines.push(`${INDENT}${brand.muted('$')} feedbackbasket feedback list --category BUG --status OPEN`);
   lines.push(`${INDENT}${brand.muted('$')} feedbackbasket bugs list --severity high`);
+  lines.push(`${INDENT}${brand.muted('$')} feedbackbasket themes list --project myapp`);
+  lines.push(`${INDENT}${brand.muted('$')} feedbackbasket github draft --theme <themeId> --project myapp`);
   lines.push(`${INDENT}${brand.muted('$')} feedbackbasket widget script myapp`);
   lines.push(`${INDENT}${brand.muted('$')} feedbackbasket widget settings myapp --display modal`);
   lines.push(`${INDENT}${brand.muted('$')} feedbackbasket widget settings myapp --capture-mode waitlist`);

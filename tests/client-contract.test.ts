@@ -49,6 +49,15 @@ test('every product operation uses its contract HTTP method and path', async () 
     await client.updateMemberAccess('member', 'SELECTED', ['project']);
   await client.inviteMembers(['member@example.test'], 'member', 'SELECTED', ['project']);
   await client.removeMember('member');
+    await client.listThemes('project');
+    await client.getTheme('project', 'theme');
+    await client.getGithubStatus('project');
+    await client.draftGithubIssue('project', { themeId: 'theme' });
+    await client.createGithubIssue('project', { themeId: 'theme', title: 'Title', body: 'Body' });
+    await client.listGithubDrafts('project');
+    await client.approveGithubDraft('project', 'draft');
+    await client.rejectGithubDraft('project', 'draft');
+    await client.updateGithubAutomation('project', { mode: 'approval' });
   } finally {
     globalThis.fetch = originalFetch;
   }
@@ -60,6 +69,8 @@ test('every product operation uses its contract HTTP method and path', async () 
       .replace('{feedbackId}', 'feedback')
       .replace('{noteId}', 'note')
       .replace('{memberId}', 'member')
+      .replace('{themeId}', 'theme')
+      .replace('{draftId}', 'draft')
       .replace('/api/v1/feedback', operation.id === 'feedback.search' ? '/api/v1/feedback?search=query' : '/api/v1/feedback')
       .replace('/api/v1/projects/project/export', '/api/v1/projects/project/export?format=csv'),
   }));
