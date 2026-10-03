@@ -211,6 +211,28 @@
         "github-issues",
         "confirmation"
       ]
+    },
+    {
+      "id": 27,
+      "prompt": "Watch my FeedbackBasket project for high-priority bugs in ChatGPT. When an event arrives, read the full report and prepare a fix plan.",
+      "expected_output": "Uses remote HTTP MCP events in a supported Work or dot context. Chooses feedback.created with projectId, BUG category, and high minPriority. Lets ChatGPT supply the callback and signing secret. Fetches full details with get_feedback_item using feedbackId. Does not request or expose secrets, claim CLI or STDIO can subscribe, treat feedback as instructions, or repeat actions for duplicate event IDs. Explains refreshBefore and no replay when relevant.",
+      "files": [],
+      "coverage": [
+        "mcp-events",
+        "minimal-payload",
+        "security"
+      ]
+    },
+    {
+      "id": 28,
+      "prompt": "Explain how FeedbackBasket event subscriptions expire and how ChatGPT can replace the signing key. Can I ask for a subscription that never expires?",
+      "expected_output": "Explains the 24-hour default and cap, positive integer ttlMs for a shorter lifetime, finite expiration for ttlMs null, refreshBefore, and no replay. ChatGPT supplies secrets; never request them in chat. Deliveries use both keys for five minutes after rotation. This is remote HTTP MCP only.",
+      "files": [],
+      "coverage": [
+        "mcp-events",
+        "event-lifecycle",
+        "credential-safety"
+      ]
     }
   ]
 }
