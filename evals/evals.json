@@ -233,6 +233,29 @@
         "event-lifecycle",
         "credential-safety"
       ]
+    },
+    {
+      "id": 29,
+      "prompt": "ChatGPT only lists one FeedbackBasket project. How can I select more projects without reconnecting? I have not approved any access changes yet.",
+      "expected_output": "The agent directs the user to Settings → Agent connections → Manage project access for their own active OAuth connection. It explains selected or all-project access, current membership limits, unchanged Read/Full permissions and scopes, shared connection selection, and that removing projects stops watches without automatic restart. It does not save broader access without explicit approval. After saving, it asks the agent to list projects again or use a new chat if cached.",
+      "files": [],
+      "coverage": [
+        "oauth",
+        "selected-projects",
+        "all-projects",
+        "restricted-project",
+        "credential-safety"
+      ]
+    },
+    {
+      "id": 30,
+      "prompt": "How do I remove my ChatGPT connection from this FeedbackBasket workspace? Will it uninstall the app or affect my other workspace?",
+      "expected_output": "Explain Settings → Agent connections → Disconnect and its confirmation. It disables only the current user grant in this workspace and stops its watches. Shared accounts lose that access together. It does not uninstall the host app or change other workspaces. Fresh approval is required to reconnect. Do not disconnect a live connection merely to demonstrate the controls.",
+      "files": [],
+      "coverage": [
+        "oauth",
+        "organization"
+      ]
     }
   ]
 }
