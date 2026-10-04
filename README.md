@@ -30,7 +30,7 @@ The browser selects the organization, Read or Full access, and Selected projects
 
 The first time you log in, a setup wizard walks you through selecting a default project and installing the Claude Code skill.
 
-The CLI uses agent surface version `3.5.0`. CLI login accepts only private CLI credentials. It does not accept MCP keys or OAuth tokens. Use `--yes` for high-impact commands in agent or machine mode. Interactive use can show a confirmation prompt. Never put an access token, refresh token, CLI token, or MCP key in source, prompts, logs, generated configuration, or final output.
+The CLI uses agent surface version `3.5.1`. CLI login accepts only private CLI credentials. It does not accept MCP keys or OAuth tokens. Use `--yes` for high-impact commands in agent or machine mode. Interactive use can show a confirmation prompt. Never put an access token, refresh token, CLI token, or MCP key in source, prompts, logs, generated configuration, or final output.
 
 ## Agent Usage
 
@@ -57,7 +57,7 @@ feedbackbasket setup claude
 <!-- BEGIN GENERATED AGENT CAPABILITIES -->
 ## Agent capability contract
 
-Agent surface version: `3.5.0`. The CLI and both MCP transports implement the same 42 product operations.
+Agent surface version: `3.5.1`. The CLI and both MCP transports implement the same 42 product operations.
 
 | Product operation | CLI command | MCP tool | Required access | Confirm |
 | --- | --- | --- | --- | --- |
@@ -396,4 +396,4 @@ MIT
 
 ## Remote ChatGPT events
 
-Agent surface 3.5.0 adds `feedback.created` on the remote HTTP MCP endpoint. Event subscriptions are an explicit transport parity exemption. CLI and STDIO retain the same 42 product operations. Use ChatGPT Work or a dot with the remote plugin to subscribe; use `get_feedback_item` to fetch details from an event.
+Agent surface 3.5.1 adds `feedback.created` on the remote HTTP MCP endpoint. Event subscriptions are an explicit transport parity exemption. CLI and STDIO retain the same 42 product operations. Use ChatGPT Work or a dot with the remote plugin to subscribe; use `get_feedback_item` to fetch details from an event.

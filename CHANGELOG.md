@@ -1,3 +1,7 @@
+# 3.5.1 — 2026-10-04
+
+- Corrected risk labels for note replacement, mobile access changes, draft rejection, and GitHub automation in the shared contract.
+
 # 3.5.0 — 2026-10-03
 
 - Updated the shared agent contract to 3.5.0. Remote HTTP MCP adds feedback events under an explicit transport parity exemption.
