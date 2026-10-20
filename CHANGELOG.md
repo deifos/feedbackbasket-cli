@@ -1,4 +1,30 @@
+# 3.10.0 — 2026-10-20
+
+- Add `roadmap configure --hidden-columns` to hide empty roadmap columns from the dashboard and public roadmap.
+- Add `widget settings --template classic|feedback_voting`. Feedback + Voting shows the top 5 published board requests in the widget.
+- Match contract 3.10.0 across the CLI and both MCP transports (61 operations).
+
+# 3.9.0
+
+- Add project reply permissions, personal Telegram connections, and agent reply drafts.
+- Agents need an explicit project SEND grant before sending customer replies.
+
+## 3.8.0 — 2026-10-19
+
+- Add private Telegram connection, test, disconnect, and per-project notification controls.
+- Match contract 3.8.0 across the CLI and both MCP transports (58 operations).
+
+# 3.7.0
+
+- Add board settings, published feedback with vote counts, current vote records, and roadmap settings and card management.
+- Keep all 53 operations aligned with contract 3.7.0.
+
 # 3.5.1 — 2026-10-04
+
+## 3.6.0
+
+- Publish or withdraw reviewed feedback on public boards through the shared publication field.
+- Use agent contract 3.6.0. Existing feedback remains private until approved.
 
 - Corrected risk labels for note replacement, mobile access changes, draft rejection, and GitHub automation in the shared contract.
 

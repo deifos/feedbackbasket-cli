@@ -32,7 +32,7 @@ export interface FeedbackFlowSettings {
 
 export interface WidgetSettings {
   captureMode?: 'feedback' | 'waitlist';
-  widgetType?: string;
+  widgetType?: 'classic' | 'feedback_voting';
   triggerMode?: 'floating' | 'inline';
   buttonColor?: string;
   buttonRadius?: number;
@@ -99,6 +99,8 @@ export interface MobileIntegrationResponse {
 }
 
 export interface Feedback {
+  isPublished?: boolean;
+  voteCount?: number;
   id: string;
   content: string;
   email?: string | null;

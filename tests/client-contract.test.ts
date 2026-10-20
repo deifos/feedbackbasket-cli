@@ -5,6 +5,21 @@ import { FeedbackBasketClient } from '../src/client.js';
 
 type ExpectedCall = { method: string; path: string };
 
+test('publication sends true and false without converting them to strings', async () => {
+  const originalFetch = globalThis.fetch;
+  const bodies: unknown[] = [];
+  globalThis.fetch = (async (_input: unknown, init?: RequestInit) => {
+    bodies.push(JSON.parse(String(init?.body)));
+    return new Response('{}', { status: 200, headers: { 'Content-Type': 'application/json' } });
+  }) as typeof fetch;
+  try {
+    const client = new FeedbackBasketClient('test-credential', 'https://feedbackbasket.test');
+    await client.updateFeedback('feedback', { isPublished: true });
+    await client.updateFeedback('feedback', { isPublished: false });
+    assert.deepEqual(bodies, [{ isPublished: true }, { isPublished: false }]);
+  } finally { globalThis.fetch = originalFetch; }
+});
+
 test('every product operation uses its contract HTTP method and path', async () => {
   const originalFetch = globalThis.fetch;
   const calls: ExpectedCall[] = [];
@@ -16,6 +31,12 @@ test('every product operation uses its contract HTTP method and path', async () 
 
   try {
     const client = new FeedbackBasketClient('test-credential', 'https://feedbackbasket.test');
+    for (const operation of PRODUCT_OPERATIONS.filter(op => op.id.startsWith('conversations.') || op.id.startsWith('telegram.') || op.id.startsWith('boards.') || op.id.startsWith('roadmap.') || op.id === 'feedback.listVotes')) {
+      const fields = operation.mcp.inputSchema.properties as Record<string, { const?: unknown }>;
+      const args: Record<string, unknown> = {};
+      for (const name of operation.mcp.inputSchema.required as string[]) args[name] = fields[name].const ?? ({projectId:'project',feedbackId:'feedback',cardId:'card',title:'Title'} as Record<string,string>)[name];
+      await client.executeOperation(operation.id, args);
+    }
     await client.listProjects();
     await client.getProject('project');
     await client.createProject({ name: 'Project', url: 'https://example.test' });
@@ -66,6 +87,7 @@ test('every product operation uses its contract HTTP method and path', async () 
     method: operation.http.method,
     path: operation.http.path
       .replace('{projectId}', 'project')
+      .replace('{cardId}', 'card')
       .replace('{feedbackId}', 'feedback')
       .replace('{noteId}', 'note')
       .replace('{memberId}', 'member')

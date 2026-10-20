@@ -57,10 +57,29 @@ feedbackbasket setup claude
 <!-- BEGIN GENERATED AGENT CAPABILITIES -->
 ## Agent capability contract
 
-Agent surface version: `3.5.1`. The CLI and both MCP transports implement the same 42 product operations.
+Agent surface version: `3.10.0`. The CLI and both MCP transports implement the same 61 product operations.
 
 | Product operation | CLI command | MCP tool | Required access | Confirm |
 | --- | --- | --- | --- | --- |
+| `conversations.getAccess` | `conversations access` | `get_conversation_access` | `read:projects; allowed project` | No |
+| `conversations.setAccess` | `conversations configure` | `set_conversation_access` | `write:team; allowed project` | Yes |
+| `conversations.draft` | `conversations draft` | `draft_feedback_reply` | `write:replies; allowed project` | No |
+| `telegram.get` | `telegram show` | `get_telegram` | `read:projects; unrestricted key` | No |
+| `telegram.connect` | `telegram connect` | `connect_telegram` | `write:team; unrestricted key` | No |
+| `telegram.disconnect` | `telegram disconnect` | `disconnect_telegram` | `write:team; unrestricted key` | Yes |
+| `telegram.test` | `telegram test` | `test_telegram` | `write:team; unrestricted key` | No |
+| `telegram.updateProject` | `telegram configure` | `update_project_telegram` | `write:projects; allowed project` | No |
+| `boards.get` | `boards show` | `get_board` | `read:projects; allowed project` | No |
+| `boards.update` | `boards update` | `update_board` | `write:projects; allowed project` | Yes |
+| `boards.listFeedback` | `boards feedback` | `list_board_feedback` | `read:feedback; allowed project` | No |
+| `feedback.listVotes` | `feedback votes` | `list_feedback_votes` | `read:feedback; allowed project` | No |
+| `roadmap.getSettings` | `roadmap settings` | `get_roadmap_settings` | `read:projects; allowed project` | No |
+| `roadmap.updateSettings` | `roadmap configure` | `update_roadmap_settings` | `write:projects; allowed project` | Yes |
+| `roadmap.listCards` | `roadmap list` | `list_roadmap_cards` | `read:projects; allowed project` | No |
+| `roadmap.getCard` | `roadmap show` | `get_roadmap_card` | `read:projects; allowed project` | No |
+| `roadmap.createCard` | `roadmap create` | `create_roadmap_card` | `write:projects; allowed project` | No |
+| `roadmap.updateCard` | `roadmap update` | `update_roadmap_card` | `write:projects; allowed project` | No |
+| `roadmap.deleteCard` | `roadmap delete` | `delete_roadmap_card` | `write:projects; allowed project` | Yes |
 | `projects.list` | `projects list` | `list_projects` | `read:projects` | No |
 | `projects.get` | `projects show` | `get_project` | `read:projects; allowed project` | No |
 | `projects.create` | `projects create` | `create_project` | `write:projects; unrestricted key` | No |

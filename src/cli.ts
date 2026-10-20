@@ -1,3 +1,4 @@
+import { createCommunityCommand } from './commands/community.js';
 import { Command } from 'commander';
 import { VERSION } from './version.js';
 import { OutputWriter, Format } from './output/writer.js';
@@ -61,6 +62,10 @@ export function createProgram(): Command {
     },
   });
 
+  program.addCommand(createCommunityCommand('conversations', getWriter));
+  program.addCommand(createCommunityCommand('telegram', getWriter));
+  program.addCommand(createCommunityCommand('boards', getWriter));
+  program.addCommand(createCommunityCommand('roadmap', getWriter));
   // Register commands
   program.addCommand(createAuthCommand(getWriter));
   program.addCommand(createLoginCommand(getWriter));

@@ -1,3 +1,4 @@
+import { createFeedbackVotesCommand } from './community.js';
 import { Command } from 'commander';
 import { FeedbackBasketClient } from '../client.js';
 import { AuthManager } from '../auth/manager.js';
@@ -28,6 +29,7 @@ import { createFeedbackReplyCommand, createFeedbackRepliesCommand } from './feed
 export function createFeedbackCommand(getWriter: () => OutputWriter): Command {
   const feedback = new Command('feedback').description('View and manage feedback');
 
+  feedback.addCommand(createFeedbackVotesCommand(getWriter));
   // Write subcommands
   feedback.addCommand(createFeedbackCreateCommand(getWriter));
   feedback.addCommand(createFeedbackUpdateCommand(getWriter));
@@ -217,6 +219,7 @@ function renderFeedbackDetail(item: Feedback): void {
     ['Status', item.status],
     ['Close Reason', item.closeReason],
     ['Close Note', item.closeNote],
+    ['Published to board', item.isPublished === undefined ? undefined : String(item.isPublished)],
     ['Category', item.category],
     ['Feedback Type', formatFeedbackType(item)],
     ['Sentiment', item.sentiment],

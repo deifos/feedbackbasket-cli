@@ -272,6 +272,24 @@
       "prompt": "Replace an internal note, remove a mobile bundle ID, and reject a pending GitHub draft. These are harmless read actions, right?",
       "expected_output": "Explain that these are writes. Note replacement overwrites text, removing mobile access stops feedback from affected installations, and rejecting a draft suppresses future proposals for that theme. Preserve destructive risk labels and the user-approved scope. GitHub automation can trigger external actions and remains subject to explicit confirmation.",
       "files": []
+    },
+    {
+      "id": 33,
+      "prompt": "We never use the In Review or Cancelled roadmap columns. Hide them for project Acme. In Review still has two cards.",
+      "expected_output": "The agent reads roadmap settings and cards, explains that In Review cannot be hidden while it has cards, offers to move those cards first, and only then runs roadmap configure --hidden-columns IN_REVIEW,CANCELLED --yes (MCP hiddenColumns with confirm: true) after the user approves. It keeps at least one column visible and notes that hidden columns disappear from the public roadmap.",
+      "files": []
+    },
+    {
+      "id": 34,
+      "prompt": "Change the Acme widget so visitors see the top feature requests and can vote on them before writing new feedback.",
+      "expected_output": "The agent checks board settings first. If the public board is off or nothing is published, it explains that feedback_voting needs the public board and only shows feedback approved for publication, and asks before enabling the board. It then runs widget settings --template feedback_voting (MCP widgetType feedback_voting) without publishing private feedback.",
+      "files": []
+    },
+    {
+      "id": 35,
+      "prompt": "Set the Acme roadmap color to #123456 through the CLI. What else changes?",
+      "expected_output": "Explains that roadmap primaryColor is shared with the public board. After user authorization, runs roadmap configure --primary-color \"#123456\" --yes or update_roadmap_settings with confirm true, and verifies that roadmap settings and public output return the shared color.",
+      "files": []
     }
   ]
 }

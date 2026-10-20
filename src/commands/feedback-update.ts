@@ -17,11 +17,12 @@ export function createFeedbackUpdateCommand(getWriter: () => OutputWriter): Comm
     .option('--close-note <note>', 'Internal closure note; required when the reason is OTHER')
     .option('--category <category>', 'Set category (BUG, FEATURE_REQUEST, IMPROVEMENT, QUESTION)')
     .option('--sentiment <sentiment>', 'Set sentiment (POSITIVE, NEGATIVE, NEUTRAL)')
+    .option('--published <boolean>', 'Publish full content to the board or withdraw it (true or false); review private information first')
     .action(async (id, opts) => {
       const writer = getWriter();
 
-      if (!opts.status && !opts.category && !opts.sentiment) {
-        throw errUsage('At least one of --status, --category, or --sentiment is required', 'Example: feedbackbasket feedback update <id> --status PLANNED');
+      if (!opts.status && !opts.category && !opts.sentiment && opts.published === undefined) {
+        throw errUsage('At least one of --status, --category, --sentiment, or --published is required', 'Example: feedbackbasket feedback update <id> --status PLANNED');
       }
       if (opts.status === 'CLOSED' && !opts.closeReason) {
         throw errUsage('--close-reason is required when status is CLOSED');
@@ -33,8 +34,10 @@ export function createFeedbackUpdateCommand(getWriter: () => OutputWriter): Comm
         throw errUsage('--close-note is required when --close-reason is OTHER');
       }
 
+      if (opts.published !== undefined && !['true', 'false'].includes(opts.published)) throw errUsage('--published must be true or false');
       const client = requireClient();
-      const data: Record<string, string> = {};
+      const data: { status?: string; category?: string; sentiment?: string; closeReason?: string; closeNote?: string; isPublished?: boolean } = {};
+      if (opts.published !== undefined) data.isPublished = opts.published === 'true';
       if (opts.status) data['status'] = opts.status;
       if (opts.category) data['category'] = opts.category;
       if (opts.sentiment) data['sentiment'] = opts.sentiment;

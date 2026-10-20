@@ -1,3 +1,4 @@
+import { getProductOperation, validateOperationInput, type ProductOperationId } from 'feedbackbasket-agent-contract';
 import { USER_AGENT } from './version.js';
 import { CLIError, errAuth, errForbidden, errRateLimit, errNetwork, errAPI } from './output/errors.js';
 import type { ProjectsResponse, FeedbackResponse, BugReportsResponse, FeedbackParams, FeedbackCreateInput, FeedbackCreateResponse, FeedbackReplyResponse, BugReportParams, UserProfile, Project, Feedback, WidgetSettings, WaitlistResponse, MobileIntegrationResponse, Theme, ThemeDetail, GithubStatus, GithubIssueTarget, GithubIssueDraftResult, GithubIssueRef, GithubDraft, GithubAutomation } from './types.js';
@@ -9,6 +10,28 @@ export class FeedbackBasketClient {
   constructor(token: string, baseUrl: string) {
     this.apiBaseUrl = `${baseUrl.replace(/\/$/, '')}/api/v1`;
     this.token = token;
+  }
+
+  async executeOperation(operationId: ProductOperationId, input: Record<string, unknown>): Promise<Record<string, unknown>> {
+    const operation = getProductOperation(operationId);
+    if (!operation) throw new Error(`Unknown operation: ${operationId}`);
+    const validation = validateOperationInput(operation, input);
+    if (!validation.valid) throw new Error(validation.message);
+    const args = { ...input };
+    const path = operation.http.path.replace(/\{([^}]+)\}/g, (_match, key: string) => {
+      const value = args[key]; delete args[key]; return encodeURIComponent(String(value));
+    }).replace(/^\/api\/v1/, '');
+    delete args.confirm;
+    if (operationId === 'feedback.search') { args.search = args.query; delete args.query; }
+    if (operationId === 'widget.updateSettings' && args.settings && typeof args.settings === 'object') {
+      Object.assign(args, args.settings); delete args.settings;
+    }
+    const query: Record<string, unknown> = {};
+    for (const name of operation.http.queryParameters) {
+      if (name in args) { query[name] = args[name]; delete args[name]; }
+    }
+    if (operation.http.method === 'GET') return this.request('GET', path + buildQuery({ ...query, ...args }));
+    return this.request(operation.http.method, path + buildQuery(query), args);
   }
 
   async me(): Promise<UserProfile> {
@@ -144,6 +167,7 @@ export class FeedbackBasketClient {
       sentiment?: string;
       closeReason?: string;
       closeNote?: string;
+      isPublished?: boolean;
     },
   ): Promise<Feedback> {
     return this.request<Feedback>('PATCH', `/feedback/${encodeURIComponent(id)}`, data);
@@ -173,6 +197,8 @@ export class FeedbackBasketClient {
   }
 
   async listReplies(feedbackId: string): Promise<{
+    canDraft: boolean;
+    canReply: boolean;
     replies: Array<{
       id: string;
       content: string;

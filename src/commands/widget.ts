@@ -58,6 +58,7 @@ export function createWidgetCommand(getWriter: () => OutputWriter): Command {
     .alias('update')
     .description('View or update widget settings')
     .option('--capture-mode <mode>', 'Capture mode (feedback, waitlist)')
+    .option('--template <type>', 'Widget template (classic, feedback_voting). feedback_voting shows the top 5 published board requests and needs the public board enabled')
     .option('--color <hex>', 'Button color (e.g. #22c55e)')
     .option('--label <text>', 'Button label')
     .option('--position <pos>', 'Widget position (bottom-right, bottom-left, middle-right-edge, middle-left-edge, bottom-right-edge, bottom-left-edge)')
@@ -98,7 +99,7 @@ export function createWidgetCommand(getWriter: () => OutputWriter): Command {
       const client = requireClient();
       const projectId = await resolveProjectId(client, projectArg);
 
-      const hasUpdates = opts.captureMode || opts.color || opts.label || opts.position || opts.intro ||
+      const hasUpdates = opts.captureMode || opts.template || opts.color || opts.label || opts.position || opts.intro ||
         opts.success || opts.trigger || opts.display ||
         opts.buttonRadius || opts.buttonSize || opts.icon ||
         opts.emailRequired !== undefined || opts.showEmail !== undefined ||
@@ -115,10 +116,14 @@ export function createWidgetCommand(getWriter: () => OutputWriter): Command {
         if (opts.captureMode && !['feedback', 'waitlist'].includes(opts.captureMode)) {
           throw errUsage('Capture mode must be feedback or waitlist');
         }
+        if (opts.template && !['classic', 'feedback_voting'].includes(opts.template)) {
+          throw errUsage('Template must be classic or feedback_voting');
+        }
 
         // Update mode
         const settings: Partial<WidgetSettings> = {};
         if (opts.captureMode) settings.captureMode = opts.captureMode;
+        if (opts.template) settings.widgetType = opts.template;
         if (opts.color) settings.buttonColor = opts.color;
         if (opts.label) settings.buttonLabel = opts.label;
         if (opts.position) settings.position = opts.position;
@@ -437,6 +442,7 @@ function renderWidgetSettings(projectName: string, settings: WidgetSettings): vo
 
   const display: [string, string][] = [
     ['Capture Mode', String(settings.captureMode ?? 'feedback')],
+    ['Template', String(settings.widgetType ?? 'classic')],
     ['Button Color', String(settings.buttonColor ?? '')],
     ['Button Label', String(settings.buttonLabel ?? '')],
     ['Button Radius', String(settings.buttonRadius ?? '')],

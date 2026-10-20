@@ -30,6 +30,10 @@ export function renderRootHelp(): string {
   lines.push(section('  CORE COMMANDS'));
   lines.push(cmd('projects', 'Manage projects (create, show, update, delete)'));
   lines.push(cmd('feedback', 'View and manage feedback'));
+  lines.push(cmd('boards', 'Manage public boards and inspect votes'));
+  lines.push(cmd('conversations', 'Manage reply permissions and save reply drafts'));
+  lines.push(cmd('telegram', 'Connect a private chat and manage feedback notifications'));
+  lines.push(cmd('roadmap', 'Manage settings, cards, and column order'));
   lines.push(cmd('bugs', 'View bug reports with severity'));
   lines.push(cmd('themes', 'See what several people reported (grouped feedback)'));
   lines.push(cmd('github', 'Turn feedback into GitHub issues, review drafts, set automation'));
