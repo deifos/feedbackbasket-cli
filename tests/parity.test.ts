@@ -35,7 +35,7 @@ test("the Commander tree exposes every contract command mapping", () => {
     }
   }
   assert.equal(CLI_CAPABILITIES.length, 61);
-  assert.equal(VERSION, "3.10.0");
+  assert.equal(VERSION, "3.11.0");
 });
 
 test("transport commands have declared exemptions", () => {
@@ -79,6 +79,16 @@ test("feedback close commands expose reason and note options", () => {
   }
 });
 
+test("feedback update exposes the public card options from the contract", () => {
+  const update = findCommand(findCommand(createProgram(), "feedback")!, "update")!;
+  const properties = PRODUCT_OPERATIONS.find(({ id }) => id === "feedback.update")!
+    .mcp.inputSchema.properties as Record<string, unknown>;
+  assert.ok("publicTitle" in properties);
+  assert.ok("showNamePublicly" in properties);
+  assert.ok(update.options.some((option) => option.long === "--title"));
+  assert.ok(update.options.some((option) => option.long === "--hide-name"));
+});
+
 test("the prepublish check rejects version and mapping drift", () => {
   assert.throws(
     () => verifyCliParity("2.9.9"),
@@ -87,7 +97,7 @@ test("the prepublish check rejects version and mapping drift", () => {
   assert.throws(
     () =>
       verifyCliParity(
-        "3.10.0",
+        "3.11.0",
         PRODUCT_OPERATIONS.slice(0, -1).map(({ id }) => id),
       ),
     /Expected values to be strictly deep-equal/,

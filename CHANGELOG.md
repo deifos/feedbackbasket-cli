@@ -1,3 +1,10 @@
+# 3.11.0 — 2026-11-24
+
+- Add `feedback update --title` to set the public card title shown on the board and in the voting widget. Without it, the AI title is shown.
+- Add `feedback update --hide-name` to hide a submitter's name on the public card. Only the submitter can opt in to showing it.
+- `feedback show` displays the public title and submitter name.
+- Match contract 3.11.0 across the CLI and both MCP transports (61 operations).
+
 # 3.10.0 — 2026-10-20
 
 - Add `roadmap configure --hidden-columns` to hide empty roadmap columns from the dashboard and public roadmap.

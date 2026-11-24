@@ -18,11 +18,16 @@ export function createFeedbackUpdateCommand(getWriter: () => OutputWriter): Comm
     .option('--category <category>', 'Set category (BUG, FEATURE_REQUEST, IMPROVEMENT, QUESTION)')
     .option('--sentiment <sentiment>', 'Set sentiment (POSITIVE, NEGATIVE, NEUTRAL)')
     .option('--published <boolean>', 'Publish full content to the board or withdraw it (true or false); review private information first')
+    .option('--title <title>', 'Public card title on the board and voting widget (1-140 characters); defaults to the AI title')
+    .option('--hide-name', 'Hide the submitter name on the public card; only the submitter can opt in')
     .action(async (id, opts) => {
       const writer = getWriter();
 
-      if (!opts.status && !opts.category && !opts.sentiment && opts.published === undefined) {
-        throw errUsage('At least one of --status, --category, --sentiment, or --published is required', 'Example: feedbackbasket feedback update <id> --status PLANNED');
+      if (!opts.status && !opts.category && !opts.sentiment && opts.published === undefined && opts.title === undefined && !opts.hideName) {
+        throw errUsage('At least one of --status, --category, --sentiment, --published, --title, or --hide-name is required', 'Example: feedbackbasket feedback update <id> --status PLANNED');
+      }
+      if (opts.title !== undefined && (!opts.title.trim() || opts.title.trim().length > 140)) {
+        throw errUsage('--title must be 1 to 140 characters');
       }
       if (opts.status === 'CLOSED' && !opts.closeReason) {
         throw errUsage('--close-reason is required when status is CLOSED');
@@ -36,8 +41,10 @@ export function createFeedbackUpdateCommand(getWriter: () => OutputWriter): Comm
 
       if (opts.published !== undefined && !['true', 'false'].includes(opts.published)) throw errUsage('--published must be true or false');
       const client = requireClient();
-      const data: { status?: string; category?: string; sentiment?: string; closeReason?: string; closeNote?: string; isPublished?: boolean } = {};
+      const data: { status?: string; category?: string; sentiment?: string; closeReason?: string; closeNote?: string; isPublished?: boolean; publicTitle?: string; showNamePublicly?: false } = {};
       if (opts.published !== undefined) data.isPublished = opts.published === 'true';
+      if (opts.title !== undefined) data.publicTitle = opts.title.trim();
+      if (opts.hideName) data.showNamePublicly = false;
       if (opts.status) data['status'] = opts.status;
       if (opts.category) data['category'] = opts.category;
       if (opts.sentiment) data['sentiment'] = opts.sentiment;
@@ -52,6 +59,8 @@ export function createFeedbackUpdateCommand(getWriter: () => OutputWriter): Comm
         if (opts.category) console.log(`  Category:  ${opts.category}`);
         if (opts.sentiment) console.log(`  Sentiment: ${opts.sentiment}`);
         if (opts.closeReason) console.log(`  Reason:    ${opts.closeReason}`);
+        if (opts.title !== undefined) console.log(`  Title:     ${opts.title.trim()}`);
+        if (opts.hideName) console.log('  Name:      hidden on the public card');
       }
 
       writer.ok(updated, {

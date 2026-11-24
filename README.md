@@ -57,7 +57,7 @@ feedbackbasket setup claude
 <!-- BEGIN GENERATED AGENT CAPABILITIES -->
 ## Agent capability contract
 
-Agent surface version: `3.10.0`. The CLI and both MCP transports implement the same 61 product operations.
+Agent surface version: `3.11.0`. The CLI and both MCP transports implement the same 61 product operations.
 
 | Product operation | CLI command | MCP tool | Required access | Confirm |
 | --- | --- | --- | --- | --- |

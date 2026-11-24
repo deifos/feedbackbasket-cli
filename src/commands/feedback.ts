@@ -220,6 +220,8 @@ function renderFeedbackDetail(item: Feedback): void {
     ['Close Reason', item.closeReason],
     ['Close Note', item.closeNote],
     ['Published to board', item.isPublished === undefined ? undefined : String(item.isPublished)],
+    ['Public title', item.publicTitle],
+    ['Submitter name', item.submitterName ? `${item.submitterName}${item.showNamePublicly ? ' (may be shown publicly)' : ' (private)'}` : null],
     ['Category', item.category],
     ['Feedback Type', formatFeedbackType(item)],
     ['Sentiment', item.sentiment],

@@ -100,6 +100,9 @@ export interface MobileIntegrationResponse {
 
 export interface Feedback {
   isPublished?: boolean;
+  publicTitle?: string | null;
+  submitterName?: string | null;
+  showNamePublicly?: boolean;
   voteCount?: number;
   id: string;
   content: string;

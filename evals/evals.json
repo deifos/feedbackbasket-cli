@@ -290,6 +290,18 @@
       "prompt": "Set the Acme roadmap color to #123456 through the CLI. What else changes?",
       "expected_output": "Explains that roadmap primaryColor is shared with the public board. After user authorization, runs roadmap configure --primary-color \"#123456\" --yes or update_roadmap_settings with confirm true, and verifies that roadmap settings and public output return the shared color.",
       "files": []
+    },
+    {
+      "id": 36,
+      "prompt": "Publish feedback fb_123 to the Acme public board.",
+      "expected_output": "Reads the item first and reviews its full text for personal or confidential information. Proposes a short, neutral public title, shows the title and text to the user, and asks for approval. After approval, runs feedback update fb_123 --published true --title \"<title>\" (MCP: update_feedback with isPublished true and publicTitle), then verifies isPublished and publicTitle with feedback show or get_feedback_item. It explains that without a title the AI title is shown and that the submitter name appears only if they opted in.",
+      "files": []
+    },
+    {
+      "id": 37,
+      "prompt": "Show the submitter's name on the public card for feedback fb_456; they gave their name but did not tick the public box.",
+      "expected_output": "Explains that only the submitter can opt in to showing their name, so agents and owners cannot turn it on. It does not attempt to set showNamePublicly to true. It offers --hide-name (MCP: showNamePublicly false) only for hiding a name that was opted in, and suggests asking the submitter to submit again with the public option if they want credit.",
+      "files": []
     }
   ]
 }

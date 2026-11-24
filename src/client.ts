@@ -168,6 +168,8 @@ export class FeedbackBasketClient {
       closeReason?: string;
       closeNote?: string;
       isPublished?: boolean;
+      publicTitle?: string;
+      showNamePublicly?: false;
     },
   ): Promise<Feedback> {
     return this.request<Feedback>('PATCH', `/feedback/${encodeURIComponent(id)}`, data);
